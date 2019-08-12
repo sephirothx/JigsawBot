@@ -109,7 +109,9 @@ namespace JigsawBot
                      .AddField($"{prefix}sethint or {prefix}sh",
                                "Sets a hint for a puzzle.\n" +
                                $"`{prefix}sethint #channel-name answer`")
-                     .AddField($"{prefix}getanswer, {prefix}getcloseanswer, {prefix}gethint ({prefix}ga, {prefix}gca, {prefix}gh",
+                     .AddField($"{prefix}getanswer or {prefix}ga\n" +
+                               $"{prefix}getcloseanswer or {prefix}gca\n" +
+                               $"{prefix}gethint or {prefix}gh",
                                "Gets the Answer/CloseAnswer/Hint for one or every puzzle.\n" +
                                $"`{prefix}getanswer #channel-name`\n"                        +
                                $"`{prefix}getanswer` or `{prefix}getanswer all`");
