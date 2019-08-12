@@ -101,15 +101,18 @@ namespace JigsawBot
                      .WithTitle("Admin Commands")
                      .WithColor(Color.Blue)
                      .AddField($"{prefix}setanswer or {prefix}sa",
-                               $"Sets an answer for a puzzle.\n`{prefix}setanswer #channel-name answer`")
+                               "Sets an answer for a puzzle.\n" +
+                               $"`{prefix}setanswer #channel-name answer`")
                      .AddField($"{prefix}setcloseanswer or {prefix}sca",
-                               $"Sets a close answer for a puzzle.\n`{prefix}setcloseanswer #channel-name answer`")
+                               "Sets a close answer for a puzzle.\n" +
+                               $"`{prefix}setcloseanswer #channel-name answer`")
                      .AddField($"{prefix}sethint or {prefix}sh",
-                               $"Sets a hint for a puzzle.\n`{prefix}sethint #channel-name answer`")
-                     .AddField($"{prefix}getanswer or {prefix}ga",
-                               "Gets the answer for one or every puzzle.\n" +
-                               $"`{prefix}getanswer #channel-name`\n"       +
-                               $"`{prefix}getanswer all`");
+                               "Sets a hint for a puzzle.\n" +
+                               $"`{prefix}sethint #channel-name answer`")
+                     .AddField($"{prefix}getanswer, {prefix}getcloseanswer, {prefix}gethint ({prefix}ga, {prefix}gca, {prefix}gh",
+                               "Gets the Answer/CloseAnswer/Hint for one or every puzzle.\n" +
+                               $"`{prefix}getanswer #channel-name`\n"                        +
+                               $"`{prefix}getanswer` or `{prefix}getanswer all`");
 
                 await channel.SendMessageAsync(embed: msg.Build());
             }

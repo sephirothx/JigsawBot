@@ -45,11 +45,11 @@ namespace JigsawBot
                                                  MessageCacheSize = 1000
                                              });
             services.AddSingleton(Client)
-                    .AddSingleton((new CommandService(new CommandServiceConfig
-                                                      {
-                                                          LogLevel       = LogSeverity.Verbose,
-                                                          DefaultRunMode = RunMode.Async,
-                                                      })))
+                    .AddSingleton(new CommandService(new CommandServiceConfig
+                                                     {
+                                                         LogLevel       = LogSeverity.Verbose,
+                                                         DefaultRunMode = RunMode.Async,
+                                                     }))
                     .AddSingleton<CommandHandler>()
                     .AddSingleton<StartupService>()
                     .AddSingleton<LoggingService>()

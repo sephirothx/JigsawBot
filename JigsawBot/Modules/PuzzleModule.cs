@@ -106,7 +106,7 @@ namespace JigsawBot
         [Summary("Gets user specific stats.")]
         public async Task Stats([Remainder] string content = null)
         {
-            var userId = Context.User.Id.ToString();
+            var userId  = Context.User.Id.ToString();
             var message = Context.Message;
 
             await message.DeleteAsync();
@@ -147,7 +147,7 @@ namespace JigsawBot
         }
 
         [Command("leaderboard"), Alias("l")]
-        [Summary("Gets user specific stats.")]
+        [Summary("Displays a leaderboard of the server users.")]
         public async Task Leaderboard()
         {
             var message = Context.Message;
@@ -171,7 +171,7 @@ namespace JigsawBot
         }
 
         [Command("puzzle"), Alias("p")]
-        [Summary("Gets user specific stats.")]
+        [Summary("Gets puzzle specific stats.")]
         public async Task Puzzle([Remainder] string content)
         {
             var user    = Context.User;
@@ -213,10 +213,7 @@ namespace JigsawBot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetAnswer([Remainder] string content)
         {
-            var message = Context.Message;
-            await message.DeleteAsync();
-
-            await SetPuzzleData(content, PuzzleDataType.Answer);
+            await SetPuzzleDataAsync(content, PuzzleDataType.Answer);
         }
 
         [Command("setcloseanswer"), Alias("sca")]
@@ -224,10 +221,7 @@ namespace JigsawBot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetCloseAnswer([Remainder] string content)
         {
-            var message = Context.Message;
-            await message.DeleteAsync();
-
-            await SetPuzzleData(content, PuzzleDataType.CloseAnswer);
+            await SetPuzzleDataAsync(content, PuzzleDataType.CloseAnswer);
         }
 
         [Command("sethint"), Alias("sh")]
@@ -235,61 +229,31 @@ namespace JigsawBot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetHint([Remainder] string content)
         {
-            var message = Context.Message;
-            await message.DeleteAsync();
-
-            await SetPuzzleData(content, PuzzleDataType.Hint);
+            await SetPuzzleDataAsync(content, PuzzleDataType.Hint);
         }
 
         [Command("getanswer"), Alias("ga")]
-        [Summary("Gets an answer from the DataBase.")]
+        [Summary("Gets answers from the DataBase.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GetAnswer([Remainder] string content = null)
         {
-            var user    = Context.User;
-            var message = Context.Message;
-            await message.DeleteAsync();
+            await GetPuzzleDataAsync(content, PuzzleDataType.Answer);
+        }
 
-            var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
+        [Command("getcloseanswer"), Alias("gca")]
+        [Summary("Gets close answers from the DataBase.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GetCloseAnswer([Remainder] string content = null)
+        {
+            await GetPuzzleDataAsync(content, PuzzleDataType.CloseAnswer);
+        }
 
-            if (content?.Equals("all") ?? true)
-            {
-                var puzzles = SqliteDataAccess.GetAllPuzzlesData(PuzzleDataType.Answer);
-                var msg = new EmbedBuilder
-                          {
-                              Title = "All Answers",
-                              Color = Color.DarkBlue,
-                              Footer = new EmbedFooterBuilder
-                                       {
-                                           Text = $"Total number of puzzles: {puzzles.Count.ToString()}."
-                                       }
-                          };
-
-                foreach (var puzzle in puzzles)
-                {
-                    msg.Description += $"<#{puzzle.Code}> {string.Join(", ", puzzle.Data)}\n";
-                }
-
-                await channel.SendMessageAsync(embed: msg.Build());
-                await channel.CloseAsync();
-                return;
-            }
-
-            var regex = new Regex(@"<#(?<code>\d+)>");
-            var match = regex.Match(content);
-
-            if (!match.Success)
-            {
-                await ReplyAsync($"{user.Mention} Wrong command format. It should be" +
-                                 $"`{_prefix}getanswer #channel-name or .getanswer`");
-                return;
-            }
-
-            var code    = match.Groups["code"].Value;
-            var answers = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.Answer);
-
-            await channel.SendMessageAsync($"<#{code}> {string.Join(", ", answers)}");
-            await channel.CloseAsync();
+        [Command("gethint"), Alias("gh")]
+        [Summary("Gets hints from the DataBase.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GetHint([Remainder] string content = null)
+        {
+            await GetPuzzleDataAsync(content, PuzzleDataType.Hint);
         }
 
         #region Private
@@ -306,8 +270,11 @@ namespace JigsawBot
             return ":white_check_mark: " + _correctAnswers[random.Next(_correctAnswers.Count)].Replace("_NAME_", name);
         }
 
-        private async Task SetPuzzleData(string content, PuzzleDataType type)
+        private async Task SetPuzzleDataAsync(string content, PuzzleDataType type)
         {
+            var message = Context.Message;
+            await message.DeleteAsync();
+
             var regex = new Regex(@"<#(?<code>\d+)>\s*(?<answer>.*)");
             var match = regex.Match(content);
 
@@ -315,7 +282,8 @@ namespace JigsawBot
             {
                 string command = type == PuzzleDataType.Answer      ? "setanswer" :
                                  type == PuzzleDataType.CloseAnswer ? "setcloseanswer" :
-                                                                      "sethint";
+                                 type == PuzzleDataType.Hint        ? "sethint" :
+                                                                      throw new Exception($"Unknown PuzzleDataType: {type}");
 
                 await ReplyAsync($"{Context.User.Mention} Wrong command format. It should be " +
                                  $"`{_prefix}{command} #channel-name answer`");
@@ -334,13 +302,70 @@ namespace JigsawBot
 
             SqliteDataAccess.AddPuzzleData(puzzle);
 
-            await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Debug,
-                                                                  "Bot",
+            await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Debug, "Bot",
                                                                   $"Added answer: {code} = {answer}"));
             await ReplyAsync($"Added {type} to problem <#{code}>.");
         }
 
-        private bool Contains(List<string> list, string item)
+        private async Task GetPuzzleDataAsync(string content, PuzzleDataType type)
+        {
+            var user    = Context.User;
+            var message = Context.Message;
+            await message.DeleteAsync();
+
+            var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
+
+            if (content?.Equals("all") ?? true)
+            {
+                var puzzles = SqliteDataAccess.GetAllPuzzlesData(type);
+                var msg = new EmbedBuilder
+                          {
+                              Title = $"All {type}s",
+                              Color = Color.Blue,
+                              Footer = new EmbedFooterBuilder
+                                       {
+                                           Text = $"Total: {puzzles.Count.ToString()}."
+                                       }
+                          };
+
+                foreach (var puzzle in puzzles)
+                {
+                    msg.Description += $"<#{puzzle.Code}> {string.Join(", ", puzzle.Data)}\n";
+                }
+
+                await channel.SendMessageAsync(embed: msg.Build());
+                await channel.CloseAsync();
+                return;
+            }
+
+            var regex = new Regex(@"<#(?<code>\d+)>");
+            var match = regex.Match(content);
+
+            if (!match.Success)
+            {
+                string command = type == PuzzleDataType.Answer      ? "setanswer" :
+                                 type == PuzzleDataType.CloseAnswer ? "setcloseanswer" :
+                                 type == PuzzleDataType.Hint        ? "sethint" :
+                                                                      throw new Exception($"Unknown PuzzleDataType: {type}");
+
+                await ReplyAsync($"{user.Mention} Wrong command format. It should be" +
+                                 $"`{_prefix}{command} #channel-name` or `{_prefix}{command}`");
+                await channel.CloseAsync();
+                return;
+            }
+
+            var code = match.Groups["code"].Value;
+            var data = SqliteDataAccess.GetPuzzleData(code, type);
+
+            if (data.Any())
+            {
+                await channel.SendMessageAsync($"{type}: <#{code}> {string.Join(", ", data)}");
+            }
+
+            await channel.CloseAsync();
+        }
+
+        private static bool Contains(List<string> list, string item)
         {
             return list.Any(s => s.Equals(item, StringComparison.InvariantCultureIgnoreCase));
         }
