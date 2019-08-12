@@ -11,6 +11,7 @@ namespace JigsawBot
     public class BotClient
     {
         public IConfigurationRoot Configuration { get; }
+        public DiscordSocketClient Client { get; private set; }
 
         private static BotClient _instance;
         public static BotClient Instance => _instance ?? (_instance = new BotClient());
@@ -38,11 +39,12 @@ namespace JigsawBot
 
         private void ConfigureServices(ServiceCollection services)
         {
-            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
-                                                          {
-                                                              LogLevel         = LogSeverity.Verbose,
-                                                              MessageCacheSize = 1000
-                                                          }))
+            Client = new DiscordSocketClient(new DiscordSocketConfig
+                                             {
+                                                 LogLevel         = LogSeverity.Verbose,
+                                                 MessageCacheSize = 1000
+                                             });
+            services.AddSingleton(Client)
                     .AddSingleton((new CommandService(new CommandServiceConfig
                                                       {
                                                           LogLevel       = LogSeverity.Verbose,

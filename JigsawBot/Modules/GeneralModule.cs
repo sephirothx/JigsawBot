@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -15,7 +17,21 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            await ReplyAsync(text);
+            var regex = new Regex(@"<#(?<channel>\d+)>\s+(?<text>.*)");
+            var match = regex.Match(text);
+
+            if (!match.Success)
+            {
+                await ReplyAsync(text);
+                return;
+            }
+
+            var c = ulong.Parse(match.Groups["channel"].Value);
+            text = match.Groups["text"].Value;
+
+            var channel = BotClient.Instance.Client.GetChannel(c) as SocketTextChannel ??
+                          throw new Exception($"Channel {c} is not valid.");
+            await channel.SendMessageAsync(text);
         }
 
         [Command("update")]
