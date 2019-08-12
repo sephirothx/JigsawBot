@@ -128,7 +128,7 @@ namespace JigsawBot
             }
 
             var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
-            var stats   = SqliteDataAccess.GetUsersPuzzlesStats(userId);
+            var stats   = SqliteDataAccess.GetUsersCompletedPuzzles(userId);
             string name = content == null
                               ? "You"
                               : SqliteDataAccess.GetUserById(userId).Name;

@@ -9,15 +9,7 @@ namespace JigsawBot
 {
     public static class SqliteDataAccess
     {
-        public static List<UserModel> GetUsers()
-        {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
-            {
-                var output = connection.Query<UserModel>("SELECT * FROM USER ORDER BY Solved DESC",
-                                                         new DynamicParameters());
-                return output.ToList();
-            }
-        }
+        #region Puzzle
 
         public static List<PuzzleData> GetAllPuzzlesData(PuzzleDataType type)
         {
@@ -64,7 +56,7 @@ namespace JigsawBot
             }
         }
 
-        public static void SetAnswerToNewPuzzle(PuzzleModel puzzle)
+        public static void AddNewPuzzle(PuzzleModel puzzle)
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
@@ -82,6 +74,22 @@ namespace JigsawBot
             }
         }
 
+        public static List<CompletedPuzzleModel> GetPuzzleInfo(string code)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
+                                                                    $"WHERE PuzzleCode='{code}' "     +
+                                                                    "ORDER BY DateCompleted ASC",
+                                                                    new DynamicParameters());
+                return output.ToList();
+            }
+        }
+
+        #endregion
+
+        #region User
+
         public static void AddNewUser(UserModel user)
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
@@ -90,16 +98,13 @@ namespace JigsawBot
             }
         }
 
-        public static void NewCompletedPuzzle(CompletedPuzzleModel cp)
+        public static List<UserModel> GetUsers()
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                connection.Execute("INSERT OR REPLACE INTO COMPLETEDPUZZLES (UserId, PuzzleCode, DateCompleted) " +
-                                   "VALUES (@UserId, @PuzzleCode, @DateCompleted)", cp);
-
-                connection.Execute("UPDATE USER "                                                             +
-                                   "SET Solved=(SELECT COUNT(*) FROM COMPLETEDPUZZLES WHERE UserId=@UserId) " +
-                                   "WHERE Id=@UserId", cp);
+                var output = connection.Query<UserModel>("SELECT * FROM USER ORDER BY Solved DESC",
+                                                         new DynamicParameters());
+                return output.ToList();
             }
         }
 
@@ -137,19 +142,24 @@ namespace JigsawBot
             }
         }
 
-        public static List<CompletedPuzzleModel> GetPuzzleInfo(string code)
+        #endregion
+
+        #region Completed Puzzles
+
+        public static void NewCompletedPuzzle(CompletedPuzzleModel cp)
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
-                                                                    $"WHERE PuzzleCode='{code}' "     +
-                                                                    "ORDER BY DateCompleted ASC",
-                                                                    new DynamicParameters());
-                return output.ToList();
+                connection.Execute("INSERT OR REPLACE INTO COMPLETEDPUZZLES (UserId, PuzzleCode, DateCompleted) " +
+                                   "VALUES (@UserId, @PuzzleCode, @DateCompleted)", cp);
+
+                connection.Execute("UPDATE USER "                                                             +
+                                   "SET Solved=(SELECT COUNT(*) FROM COMPLETEDPUZZLES WHERE UserId=@UserId) " +
+                                   "WHERE Id=@UserId", cp);
             }
         }
 
-        public static List<CompletedPuzzleModel> GetUsersPuzzlesStats(string userId)
+        public static List<CompletedPuzzleModel> GetUsersCompletedPuzzles(string userId)
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
@@ -161,9 +171,15 @@ namespace JigsawBot
             }
         }
 
+        #endregion
+
+        #region Private
+
         private static string GetConfigurationString()
         {
             return @"Data Source=.\ProjectDB.db;Version=3;";
         }
+
+        #endregion
     }
 }
