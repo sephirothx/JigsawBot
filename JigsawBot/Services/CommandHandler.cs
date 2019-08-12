@@ -39,6 +39,8 @@ namespace JigsawBot
             var channel = _discord.GetChannel(id) as SocketTextChannel ?? throw new Exception("Greeting Channel is not valid.");
             await channel.SendMessageAsync($"Hello {u.Mention}. I want to play a game with you.");
 
+            await BotActions.SendHelpMessageAsync(u);
+
             var user = new UserModel
                        {
                            Id     = u.Id.ToString(),
