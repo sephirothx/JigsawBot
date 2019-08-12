@@ -84,8 +84,8 @@ namespace JigsawBot
                                $"`{prefix}hint #channel-name`")
                      .AddField($"{prefix}stats or {prefix}s",
                                "Shows some informations about your or another user's puzzle solving performances.\n" +
-                               $"`{prefix}stats` displays your stats\n"                                              +
-                               $"`{prefix}stats @user` or `{prefix}stats user` displays user's stats")
+                               $"`{prefix}stats` : displays your stats\n"                                              +
+                               $"`{prefix}stats @user` or `{prefix}stats user` : displays user's stats")
                      .AddField($"{prefix}leaderboard or {prefix}l",
                                "Displays the users with the most puzzles solved.")
                      .AddField($"{prefix}puzzle or {prefix}p",
