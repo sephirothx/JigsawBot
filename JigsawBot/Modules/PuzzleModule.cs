@@ -13,13 +13,15 @@ namespace JigsawBot
         private readonly List<string> _wrongAnswers = new List<string>
                                                       {
                                                           "You know nothing, _NAME_.",
-                                                          "I wouldn't type this answer unless I was you, _NAME_."
+                                                          "I wouldn't type this answer unless I was you, _NAME_.",
+                                                          "I would have come up with a better answer when I was 4, _NAME_."
                                                       };
 
         private readonly List<string> _correctAnswers = new List<string>
                                                         {
                                                             "Congratulations _NAME_, you are still alive.",
-                                                            "You're goddamn right, _NAME_."
+                                                            "You're goddamn right, _NAME_.",
+                                                            "Finally you did it, _NAME_. Took you long enough."
                                                         };
 
         private readonly string _prefix = BotClient.Instance.Configuration["prefix"];
