@@ -302,7 +302,7 @@ namespace JigsawBot
                              Data       = answer
                          };
 
-            SqliteDataAccess.AddPuzzleData(puzzle);
+            await BotActions.AddPuzzleDataAsync(puzzle);
 
             await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Debug, "Bot",
                                                                   $"Added answer: {code} = {answer}"));

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
@@ -61,6 +62,28 @@ namespace JigsawBot
             }
 
             await channel.CloseAsync();
+        }
+
+        public static async Task SendMessageToChannelAsync(string message, string channel)
+        {
+            var config = BotClient.Instance.Configuration;
+            var client = BotClient.Instance.Client;
+
+            var id = ulong.Parse(config[channel]);
+            var ch = client.GetChannel(id) as SocketTextChannel ?? throw new Exception($"Channel {id} is not valid.");
+            await ch.SendMessageAsync(message);
+        }
+
+        public static async Task AddPuzzleDataAsync(PuzzleDataModel puzzle)
+        {
+            if (SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode) == null)
+            {
+                SqliteDataAccess.AddNewPuzzle(new PuzzleModel {Code = puzzle.PuzzleCode});
+                await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
+                                                "notifications_channel");
+            }
+
+            SqliteDataAccess.AddPuzzleData(puzzle);
         }
     }
 }

@@ -1,5 +1,6 @@
 {
   "prefix": "!",
-  "greeting_channel": "", 
+  "greeting_channel": "",
+  "notifications_channel": "", 
   "token": "" 
 }

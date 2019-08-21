@@ -56,11 +56,28 @@ namespace JigsawBot
             }
         }
 
+        public static PuzzleModel GetPuzzle(string code)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                var output = connection.Query<PuzzleModel>("SELECT * FROM PUZZLE " +
+                                                           $"WHERE Code={code}", new DynamicParameters());
+                try
+                {
+                    return output.First();
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+        }
+
         public static void AddNewPuzzle(PuzzleModel puzzle)
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                connection.Execute("INSERT OR REPLACE INTO PUZZLE (Code, Data) VALUES (@Code, @Data)", puzzle);
+                connection.Execute("INSERT OR REPLACE INTO PUZZLE (Code) VALUES (@Code)", puzzle);
             }
         }
 
@@ -68,7 +85,6 @@ namespace JigsawBot
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                connection.Execute("INSERT OR REPLACE INTO PUZZLE (Code) VALUES (@PuzzleCode)", data);
                 connection.Execute("INSERT INTO PUZZLEDATA (PuzzleCode, Type, Data) VALUES (@PuzzleCode, @Type, @Data)",
                                    data);
             }
