@@ -40,14 +40,18 @@ namespace JigsawBot
 
             await BotActions.SendHelpMessageAsync(u);
 
-            var user = new UserModel
-                       {
-                           Id     = u.Id.ToString(),
-                           Name   = u.Username,
-                           Solved = 0
-                       };
+            if (SqliteDataAccess.GetUserById(u.Id.ToString()) == null)
+            {
+                var user = new UserModel
+                           {
+                               Id     = u.Id.ToString(),
+                               Name   = u.Username,
+                               Solved = 0,
+                               Score  = 0
+                           };
 
-            SqliteDataAccess.AddNewUser(user);
+                SqliteDataAccess.AddOrUpdateUser(user);
+            }
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage s)

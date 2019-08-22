@@ -78,7 +78,11 @@ namespace JigsawBot
         {
             if (SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode) == null)
             {
-                SqliteDataAccess.AddNewPuzzle(new PuzzleModel {Code = puzzle.PuzzleCode});
+                SqliteDataAccess.AddOrUpdatePuzzle(new PuzzleModel
+                                              {
+                                                  Code   = puzzle.PuzzleCode,
+                                                  Points = Constants.PUZZLE_STARTING_POINTS
+                                              });
                 await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
                                                 "notifications_channel");
             }

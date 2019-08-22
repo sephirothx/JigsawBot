@@ -48,6 +48,13 @@ namespace JigsawBot
             var code   = match.Groups["code"].Value;
             var answer = match.Groups["answer"].Value;
 
+            if (SqliteDataAccess.HasUserCompletedPuzzle(user.Id.ToString(), code))
+            {
+                await ReplyAsync($"{user.Mention} you have already solved this puzzle. " +
+                                 "Try to move on with your life.");
+                return;
+            }
+
             var answers      = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.Answer);
             var closeAnswers = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
@@ -59,6 +66,32 @@ namespace JigsawBot
             {
                 await ReplyAsync(GetCorrectAnswerMessage(user.Mention));
 
+                var p = SqliteDataAccess.GetPuzzle(code);
+                var u = SqliteDataAccess.GetUserById(user.Id.ToString());
+
+                // aggiungere allo score dell'user che ha appena risolto il puzzle il valore in punti attuale del puzzle
+                u.Score += p.Points;
+                u.Solved++;
+                SqliteDataAccess.AddOrUpdateUser(u);
+
+                // se il valore del puzzle e 1, saltare alcune delle operazioni successive
+                if (p.Points != 1)
+                {
+                    // trovare l'elenco di user che hanno risolto il puzzle
+                    var usersWhoSolvedPuzzle = SqliteDataAccess.GetUsersWhoCompletedPuzzle(code);
+
+                    // per ciascun user, sottrarre allo score il valore in punti attuale del puzzle
+                    foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
+                    {
+                        userWhoSolvedPuzzle.Score -= p.Points;
+                        SqliteDataAccess.AddOrUpdateUser(userWhoSolvedPuzzle);
+                    }
+
+                    // aggiornare il valore del puzzle
+                    SqliteDataAccess.UpdatePuzzlePoints(code);
+                }
+
+                // aggiornare la tabella dei puzzle completati
                 var cpm = new CompletedPuzzleModel
                           {
                               UserId        = user.Id.ToString(),
@@ -160,11 +193,11 @@ namespace JigsawBot
                      .WithTitle("Leaderboard")
                      .WithColor(Color.Blue);
 
-            msg.Description = $"```{"Username",-25}Solved\n\n";
+            msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
             foreach (var user in users)
             {
                 if (user.Solved == 0) break;
-                msg.Description += $"{user.Name,-25}{user.Solved,6}\n";
+                msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
             }
 
             msg.Description += "```";

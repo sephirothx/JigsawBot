@@ -34,10 +34,10 @@ namespace JigsawBot
             await channel.SendMessageAsync(text);
         }
 
-        [Command("update")]
+        [Command("updateusers"), Alias("upu")]
         [Summary("Updates the user database.")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task Update()
+        public async Task UpdateUsers()
         {
             var users = Context.Guild.Users;
             foreach (var user in users)
@@ -49,13 +49,63 @@ namespace JigsawBot
                         {
                             Id     = user.Id.ToString(),
                             Name   = user.Username,
-                            Solved = 0
+                            Solved = 0,
+                            Score  = 0
                         };
 
-                SqliteDataAccess.AddNewUser(u);
+                SqliteDataAccess.AddOrUpdateUser(u);
             }
 
             await ReplyAsync("User database updated.");
+        }
+
+        [Command("updatepuzzles"), Alias("upp")]
+        [Summary("Updates the puzzle database.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task UpdatePuzzles()
+        {
+            var puzzles = SqliteDataAccess.GetPuzzles();
+
+            foreach (var puzzle in puzzles)
+            {
+                var puzzleInfo = SqliteDataAccess.GetPuzzleInfo(puzzle.Code);
+                int n = puzzleInfo.Count;
+
+                if (n > 10)
+                {
+                    puzzle.Points = 1;
+                }
+                else
+                {
+                    puzzle.Points = Constants.PUZZLE_STARTING_POINTS / (1 << n);
+                }
+
+                SqliteDataAccess.AddOrUpdatePuzzle(puzzle);
+            }
+
+            await ReplyAsync("Puzzle database updated.");
+        }
+
+        [Command("calculateuserscore"), Alias("cus")]
+        [Summary("Updates the scores in the user database.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task CalculateUserScore()
+        {
+            var users = SqliteDataAccess.GetUsers();
+            foreach (var user in users)
+            {
+                user.Score = 0;
+                var solved = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id);
+                foreach (var puzzle in solved)
+                {
+                    var p = SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode);
+                    user.Score += p.Points;
+                }
+
+                SqliteDataAccess.AddOrUpdateUser(user);
+            }
+
+            await ReplyAsync("User scores updated.");
         }
 
         [Command("help"), Alias("h")]
