@@ -30,7 +30,8 @@ namespace JigsawBot
                                $"`{prefix}stats` : displays your stats\n"                                            +
                                $"`{prefix}stats @user` or `{prefix}stats user` : displays user's stats")
                      .AddField($"{prefix}puzzle or {prefix}p",
-                               "Displays informations regarding a specific puzzle.\n" +
+                               "Displays informations regarding all puzzles or a specific puzzle.\n" +
+                               $"`{prefix}puzzle` or `{prefix}puzzle all`\n" +
                                $"`{prefix}puzzle #channel-name`");
 
             await channel.SendMessageAsync(embed: msg.Build());
@@ -55,7 +56,14 @@ namespace JigsawBot
                                $"{prefix}gethint or {prefix}gh",
                                "Gets the Answer/CloseAnswer/Hint for one or every puzzle.\n" +
                                $"`{prefix}getanswer #channel-name`\n"                        +
-                               $"`{prefix}getanswer` or `{prefix}getanswer all`");
+                               $"`{prefix}getanswer` or `{prefix}getanswer all`")
+                     .AddField($"{prefix}setquote or {prefix}sq",
+                               "Adds a new quote of the chosen type to the database. Types:\n" +
+                               "0 - CorrectAnswer\n"                                           +
+                               "1 - WrongAnswer\n"                                             +
+                               "2 - Greeting\n"                                                +
+                               "`_NAME_` is used as a placeholder for user mention.\n"         +
+                               $"`{prefix}setquote 2 Hello _NAME_.`");
 
                 await channel.SendMessageAsync(embed: msg.Build());
             }
@@ -98,13 +106,9 @@ namespace JigsawBot
 
         public static async Task UpdateLeaderboard()
         {
-            // find the leaderboard channel
             var channel = GetChannelFromConfig("leaderboard_channel");
-
-            // find the first message written by jigsaw
             var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ?? throw new Exception("No pinned message");
 
-            // edit it with the current leaderboard
             var users = SqliteDataAccess.GetUsers();
             var msg = new EmbedBuilder()
                      .WithTitle("Leaderboard")

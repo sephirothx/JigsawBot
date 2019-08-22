@@ -108,6 +108,33 @@ namespace JigsawBot
             await ReplyAsync("User scores updated.");
         }
 
+        [Command("setquote"), Alias("sq")]
+        [Summary("Adds a quote to the database.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetQuote([Remainder] string text)
+        {
+            var regex = new Regex(@"(?<type>\d+)\s+(?<quote>.+)");
+            var match = regex.Match(text);
+
+            if (!match.Success)
+            {
+                await ReplyAsync("Wrong format.");
+                return;
+            }
+
+            var type  = (QuoteType)int.Parse(match.Groups["type"].Value);
+            var quote = match.Groups["quote"].Value;
+
+            var qm = new QuoteModel
+                     {
+                         Quote = quote,
+                         Type = type
+                     };
+            SqliteDataAccess.AddQuote(qm);
+
+            await ReplyAsync($"Added new {type}.");
+        }
+
         [Command("help"), Alias("h")]
         [Summary("Posts a description of the usable commands.")]
         public async Task Help()

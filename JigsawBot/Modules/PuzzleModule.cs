@@ -10,20 +10,6 @@ namespace JigsawBot
 {
     public class PuzzleModule : ModuleBase<SocketCommandContext>
     {
-        private readonly List<string> _wrongAnswers = new List<string>
-                                                      {
-                                                          "You know nothing, _NAME_.",
-                                                          "I wouldn't type this answer unless I was you, _NAME_.",
-                                                          "I would have come up with a better answer when I was 4, _NAME_."
-                                                      };
-
-        private readonly List<string> _correctAnswers = new List<string>
-                                                        {
-                                                            "Congratulations _NAME_, you are still alive.",
-                                                            "You're goddamn right, _NAME_.",
-                                                            "Finally you did it, _NAME_. Took you long enough."
-                                                        };
-
         private readonly string _prefix = BotClient.Instance.Configuration["prefix"];
 
         [Command("answer"), Alias("a")]
@@ -64,34 +50,28 @@ namespace JigsawBot
             }
             else if (Contains(answers, answer))
             {
-                await ReplyAsync(GetCorrectAnswerMessage(user.Mention));
+                await ReplyAsync(Utility.GetCorrectAnswerMessage(user.Mention));
 
                 var p = SqliteDataAccess.GetPuzzle(code);
                 var u = SqliteDataAccess.GetUserById(user.Id.ToString());
 
-                // aggiungere allo score dell'user che ha appena risolto il puzzle il valore in punti attuale del puzzle
                 u.Score += p.Points;
                 u.Solved++;
                 SqliteDataAccess.AddOrUpdateUser(u);
 
-                // se il valore del puzzle e 1, saltare alcune delle operazioni successive
                 if (p.Points != 1)
                 {
-                    // trovare l'elenco di user che hanno risolto il puzzle
                     var usersWhoSolvedPuzzle = SqliteDataAccess.GetUsersWhoCompletedPuzzle(code);
 
-                    // per ciascun user, sottrarre allo score il valore in punti attuale del puzzle
                     foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
                     {
                         userWhoSolvedPuzzle.Score -= p.Points;
                         SqliteDataAccess.AddOrUpdateUser(userWhoSolvedPuzzle);
                     }
 
-                    // aggiornare il valore del puzzle
                     SqliteDataAccess.UpdatePuzzlePoints(code);
                 }
 
-                // aggiornare la tabella dei puzzle completati
                 var cpm = new CompletedPuzzleModel
                           {
                               UserId        = user.Id.ToString(),
@@ -105,7 +85,7 @@ namespace JigsawBot
             }
             else
             {
-                await ReplyAsync(GetWrongAnswerMessage(user.Mention));
+                await ReplyAsync(Utility.GetWrongAnswerMessage(user.Mention));
             }
         }
 
@@ -174,9 +154,21 @@ namespace JigsawBot
                      .WithColor(Color.Blue)
                      .WithFooter($"{name} solved {stats.Count} puzzles.");
 
+            msg.Description += ":white_check_mark: Solved\n\n";
             foreach (var s in stats)
             {
                 msg.Description += $"<#{s.PuzzleCode}> {s.DateCompleted:yyyy-MM-dd HH:mm}\n";
+            }
+
+            if (content == null)
+            {
+                var notSolved = SqliteDataAccess.GetPuzzlesNotSolvedByUser(userId);
+                
+                msg.Description += "\n:x: Not Solved\n\n";
+                foreach (var notSolvedPuzzle in notSolved)
+                {
+                    msg.Description += $"<#{notSolvedPuzzle.Code}>\n";
+                }
             }
 
             await channel.SendMessageAsync(embed: msg.Build());
@@ -185,11 +177,29 @@ namespace JigsawBot
 
         [Command("puzzle"), Alias("p")]
         [Summary("Gets puzzle specific stats.")]
-        public async Task Puzzle([Remainder] string content)
+        public async Task Puzzle([Remainder] string content = null)
         {
             var user    = Context.User;
             var message = Context.Message;
             await message.DeleteAsync();
+
+            if (content == null || 
+                content.Equals("all", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var puzzles = SqliteDataAccess.GetPuzzles();
+                
+                var m = new EmbedBuilder()
+                       .WithTitle("All Puzzles")
+                       .WithColor(Color.Blue);
+
+                foreach (var p in puzzles.OrderByDescending(p => p.Points))
+                {
+                    m.Description += $"<#{p.Code}> :  {p.Points}\n";
+                }
+
+                await ReplyAsync(embed: m.Build());
+                return;
+            }
 
             var regex = new Regex(@"<#(?<code>\d+)>");
             var match = regex.Match(content);
@@ -272,18 +282,6 @@ namespace JigsawBot
         }
 
         #region Private
-
-        private string GetWrongAnswerMessage(string name)
-        {
-            var random = new Random();
-            return ":x: " + _wrongAnswers[random.Next(_wrongAnswers.Count)].Replace("_NAME_", name);
-        }
-
-        private string GetCorrectAnswerMessage(string name)
-        {
-            var random = new Random();
-            return ":white_check_mark: " + _correctAnswers[random.Next(_correctAnswers.Count)].Replace("_NAME_", name);
-        }
 
         private async Task SetPuzzleDataAsync(string content, PuzzleDataType type)
         {

@@ -230,6 +230,52 @@ namespace JigsawBot
             }
         }
 
+        public static List<PuzzleModel> GetPuzzlesNotSolvedByUser(string userId)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                var output = connection.Query<PuzzleModel>("select * from Puzzle "                       +
+                                                         "WHERE Code not in ("                         +
+                                                         "SELECT Puzzle.Code from Puzzle "             +
+                                                         "inner join CompletedPuzzles "                +
+                                                         "on puzzle.code=completedpuzzles.PuzzleCode " +
+                                                         $"where completedPuzzles.UserId='{userId}')",
+                                                         new DynamicParameters());
+                return output.ToList();
+            }
+        }
+
+        #endregion
+
+        #region Quotes
+
+        public static void AddQuote(QuoteModel quote)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                connection.Execute("INSERT INTO QUOTES (Quote, Type) " +
+                                   "VALUES (@Quote, @Type)",
+                                   quote);
+            }
+        }
+
+        public static List<string> GetQuotes(QuoteType type)
+        {
+            return GetQuotesHelper(type).Select(p => p.Quote).ToList();
+        }
+
+        private static List<QuoteModel> GetQuotesHelper(QuoteType type)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                var output = connection.Query<QuoteModel>("SELECT Quote, Type " +
+                                                          "FROM QUOTES "        +
+                                                          $"WHERE Type='{(int)type}'",
+                                                          new DynamicParameters());
+                return output.ToList();
+            }
+        }
+
         #endregion
 
         #region Private

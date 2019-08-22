@@ -35,7 +35,7 @@ namespace JigsawBot
                 return;
             }
 
-            await BotActions.SendMessageToChannelAsync($"Hello {u.Mention}. I want to play a game with you.",
+            await BotActions.SendMessageToChannelAsync(Utility.GetGreetingMessage(u.Mention),
                                                        "greeting_channel");
 
             await BotActions.SendHelpMessageAsync(u);

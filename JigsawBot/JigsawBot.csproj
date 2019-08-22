@@ -63,7 +63,10 @@
     <Compile Include="BotClient.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DataBase\Models\CompletedPuzzleModel.cs" />
+    <Compile Include="DataBase\Models\QuoteModel.cs" />
+    <Compile Include="DataBase\PuzzleDataType.cs" />
     <Compile Include="DataBase\PuzzleData.cs" />
+    <Compile Include="DataBase\QuoteType.cs" />
     <Compile Include="Modules\BotActions.cs" />
     <Compile Include="Modules\GeneralModule.cs" />
     <Compile Include="Modules\PuzzleModule.cs" />
@@ -76,6 +79,7 @@
     <Compile Include="Services\StartupService.cs" />
     <Compile Include="DataBase\SqliteDataAccess.cs" />
     <Compile Include="DataBase\Models\UserModel.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
