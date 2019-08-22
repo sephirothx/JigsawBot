@@ -116,7 +116,7 @@ namespace JigsawBot
                      .WithColor(Color.Blue);
 
             msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
-            foreach (var user in users)
+            foreach (var user in users.TakeWhile((u, i) => i < 20))
             {
                 if (user.Solved == 0) break;
                 msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
