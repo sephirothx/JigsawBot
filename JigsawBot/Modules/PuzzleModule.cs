@@ -183,30 +183,6 @@ namespace JigsawBot
             await channel.CloseAsync();
         }
 
-        //[Command("leaderboard"), Alias("l")]
-        //[Summary("Displays a leaderboard of the server users.")]
-        //public async Task Leaderboard()
-        //{
-        //    var message = Context.Message;
-        //    await message.DeleteAsync();
-
-        //    var users = SqliteDataAccess.GetUsers();
-        //    var msg = new EmbedBuilder()
-        //             .WithTitle("Leaderboard")
-        //             .WithColor(Color.Blue);
-
-        //    msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
-        //    foreach (var user in users)
-        //    {
-        //        if (user.Solved == 0) break;
-        //        msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
-        //    }
-
-        //    msg.Description += "```";
-
-        //    await ReplyAsync(embed: msg.Build());
-        //}
-
         [Command("puzzle"), Alias("p")]
         [Summary("Gets puzzle specific stats.")]
         public async Task Puzzle([Remainder] string content)
@@ -227,13 +203,15 @@ namespace JigsawBot
 
             string code = match.Groups["code"].Value;
 
+            var puzzle = SqliteDataAccess.GetPuzzle(code);
             var puzzleInfo = SqliteDataAccess.GetPuzzleInfo(code);
             var msg = new EmbedBuilder()
                      .WithTitle("Info")
                      .WithColor(Color.Blue)
                      .WithFooter($"Solved {puzzleInfo.Count} times.");
 
-            msg.Description = $"```{"Username",-25}  Date Completed\n\n";
+            msg.Description = $"This puzzle is worth {puzzle.Points} points." +
+                              $"```{"Username",-25}  Date Completed\n\n";
             foreach (var info in puzzleInfo)
             {
                 msg.Description += $"{SqliteDataAccess.GetUserById(info.UserId).Name,-25}" +
