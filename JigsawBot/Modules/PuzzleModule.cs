@@ -46,7 +46,7 @@ namespace JigsawBot
 
             if (Contains(closeAnswers, answer))
             {
-                await ReplyAsync($"You're on the right track, {user.Mention}, keep thinking!");
+                await ReplyAsync(Utility.GetCloseAnswerMessage(user.Mention));
             }
             else if (Contains(answers, answer))
             {

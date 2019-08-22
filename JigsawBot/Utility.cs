@@ -23,5 +23,11 @@ namespace JigsawBot
             var greetings = SqliteDataAccess.GetQuotes(QuoteType.Greeting);
             return greetings[_random.Next(greetings.Count)].Replace("_NAME_", name);
         }
+
+        public static string GetCloseAnswerMessage(string name)
+        {
+            var closeAnswers = SqliteDataAccess.GetQuotes(QuoteType.CloseAnswer);
+            return closeAnswers[_random.Next(closeAnswers.Count)].Replace("_NAME_", name);
+        }
     }
 }

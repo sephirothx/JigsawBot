@@ -62,6 +62,7 @@ namespace JigsawBot
                                "0 - CorrectAnswer\n"                                           +
                                "1 - WrongAnswer\n"                                             +
                                "2 - Greeting\n"                                                +
+                               "3 - CloseAnswer\n"                                             +
                                "`_NAME_` is used as a placeholder for user mention.\n"         +
                                $"`{prefix}setquote 2 Hello _NAME_.`");
 
