@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -28,8 +29,6 @@ namespace JigsawBot
                                "Shows some informations about your or another user's puzzle solving performances.\n" +
                                $"`{prefix}stats` : displays your stats\n"                                            +
                                $"`{prefix}stats @user` or `{prefix}stats user` : displays user's stats")
-                     .AddField($"{prefix}leaderboard or {prefix}l",
-                               "Displays the users with the most puzzles solved.")
                      .AddField($"{prefix}puzzle or {prefix}p",
                                "Displays informations regarding a specific puzzle.\n" +
                                $"`{prefix}puzzle #channel-name`");
@@ -66,12 +65,19 @@ namespace JigsawBot
 
         public static async Task SendMessageToChannelAsync(string message, string channel)
         {
+            var ch = GetChannelFromConfig(channel);
+            await ch.SendMessageAsync(message);
+        }
+
+        public static SocketTextChannel GetChannelFromConfig(string channel)
+        {
             var config = BotClient.Instance.Configuration;
             var client = BotClient.Instance.Client;
 
             var id = ulong.Parse(config[channel]);
             var ch = client.GetChannel(id) as SocketTextChannel ?? throw new Exception($"Channel {id} is not valid.");
-            await ch.SendMessageAsync(message);
+
+            return ch;
         }
 
         public static async Task AddPuzzleDataAsync(PuzzleDataModel puzzle)
@@ -88,6 +94,36 @@ namespace JigsawBot
             }
 
             SqliteDataAccess.AddPuzzleData(puzzle);
+        }
+
+        public static async Task UpdateLeaderboard()
+        {
+            // find the leaderboard channel
+            var channel = GetChannelFromConfig("leaderboard_channel");
+
+            // find the first message written by jigsaw
+            var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ?? throw new Exception("No pinned message");
+
+            // edit it with the current leaderboard
+            var users = SqliteDataAccess.GetUsers();
+            var msg = new EmbedBuilder()
+                     .WithTitle("Leaderboard")
+                     .WithColor(Color.Blue);
+
+            msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
+            foreach (var user in users)
+            {
+                if (user.Solved == 0) break;
+                msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
+            }
+
+            msg.Description += "```";
+
+            await message.ModifyAsync(m =>
+                                      {
+                                          m.Content = null;
+                                          m.Embed = msg.Build();
+                                      });
         }
     }
 }

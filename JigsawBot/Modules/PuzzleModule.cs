@@ -100,6 +100,8 @@ namespace JigsawBot
                           };
 
                 SqliteDataAccess.NewCompletedPuzzle(cpm);
+
+                await BotActions.UpdateLeaderboard();
             }
             else
             {
@@ -181,29 +183,29 @@ namespace JigsawBot
             await channel.CloseAsync();
         }
 
-        [Command("leaderboard"), Alias("l")]
-        [Summary("Displays a leaderboard of the server users.")]
-        public async Task Leaderboard()
-        {
-            var message = Context.Message;
-            await message.DeleteAsync();
+        //[Command("leaderboard"), Alias("l")]
+        //[Summary("Displays a leaderboard of the server users.")]
+        //public async Task Leaderboard()
+        //{
+        //    var message = Context.Message;
+        //    await message.DeleteAsync();
 
-            var users = SqliteDataAccess.GetUsers();
-            var msg = new EmbedBuilder()
-                     .WithTitle("Leaderboard")
-                     .WithColor(Color.Blue);
+        //    var users = SqliteDataAccess.GetUsers();
+        //    var msg = new EmbedBuilder()
+        //             .WithTitle("Leaderboard")
+        //             .WithColor(Color.Blue);
 
-            msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
-            foreach (var user in users)
-            {
-                if (user.Solved == 0) break;
-                msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
-            }
+        //    msg.Description = $"```{"Username",-25}{"Solved",6}{"Score",10}\n\n";
+        //    foreach (var user in users)
+        //    {
+        //        if (user.Solved == 0) break;
+        //        msg.Description += $"{user.Name,-25}{user.Solved,6}{user.Score,10}\n";
+        //    }
 
-            msg.Description += "```";
+        //    msg.Description += "```";
 
-            await ReplyAsync(embed: msg.Build());
-        }
+        //    await ReplyAsync(embed: msg.Build());
+        //}
 
         [Command("puzzle"), Alias("p")]
         [Summary("Gets puzzle specific stats.")]
