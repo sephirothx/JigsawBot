@@ -136,7 +136,7 @@ namespace JigsawBot
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                var output = connection.Query<UserModel>("SELECT * FROM USER ORDER BY Score DESC",
+                var output = connection.Query<UserModel>("SELECT * FROM USER ORDER BY Score DESC, Solved ASC",
                                                          new DynamicParameters());
                 return output.ToList();
             }
