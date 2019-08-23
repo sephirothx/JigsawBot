@@ -16,10 +16,13 @@ namespace JigsawBot
             BackupDir    = config["backup_dir"];
             DatabasePath = Path.Combine(AppContext.BaseDirectory, "ProjectDB.db");
 
-            var timer = new Timer(8 * 60 * 60 * 1000);
+            var timer = new Timer(4 * 60 * 60 * 1000);
             timer.Elapsed += OnTimerElapsed;
 
             timer.Start();
+            LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Verbose,
+                                                            "Backup",
+                                                            "Backup service started."));
         }
 
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
