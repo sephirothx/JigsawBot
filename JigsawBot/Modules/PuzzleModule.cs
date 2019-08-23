@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace JigsawBot
 {
@@ -91,68 +92,57 @@ namespace JigsawBot
 
         [Command("hint")]
         [Summary("Gets a hint for the selected puzzle.")]
-        public async Task Hint([Remainder] string content)
+        public async Task Hint(IMessageChannel puzzle)
         {
-            var user    = Context.User;
             var message = Context.Message;
-
             await message.DeleteAsync();
 
-            var regex = new Regex(@"<#(?<code>\d+)>");
-            var match = regex.Match(content);
-
-            if (!match.Success)
-            {
-                await ReplyAsync($"{user.Mention} Wrong command format. It should be " +
-                                 $"`{_prefix}hint #channel-name`");
-                return;
-            }
-
-            var code  = match.Groups["code"].Value;
-            var hints = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.Hint);
-
+            var hints = SqliteDataAccess.GetPuzzleData(puzzle.Id.ToString(),
+                                                       PuzzleDataType.Hint);
             if (hints.Any())
             {
-                var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
+                var channel = await Context.User.GetOrCreateDMChannelAsync();
                 await channel.SendMessageAsync(string.Join(", ", hints));
                 await channel.CloseAsync();
             }
         }
 
         [Command("stats"), Alias("s")]
-        [Summary("Gets user specific stats.")]
-        public async Task Stats([Remainder] string content = null)
+        [Summary("Gets the stats of a specific user.")]
+        public async Task Stats(SocketUser user)
         {
-            var userId  = Context.User.Id.ToString();
             var message = Context.Message;
-
             await message.DeleteAsync();
 
-            if (content != null)
-            {
-                var regex = new Regex(@"<@(?<code>\d+)>");
-                var match = regex.Match(content);
-
-                userId = match.Success
-                             ? match.Groups["code"].Value
-                             : SqliteDataAccess.GetUserByName(content)?.Id;
-
-                if (userId == null)
-                {
-                    await ReplyAsync($"404: Username '{content}' not found.");
-                    return;
-                }
-            }
-
-            var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
-            var stats   = SqliteDataAccess.GetUsersCompletedPuzzles(userId);
-            string name = content == null
-                              ? "You"
-                              : SqliteDataAccess.GetUserById(userId).Name;
+            var stats = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
             var msg = new EmbedBuilder()
                      .WithTitle("Statistics")
                      .WithColor(Color.Blue)
-                     .WithFooter($"{name} solved {stats.Count} puzzles.");
+                     .WithFooter($"{user.Username} solved {stats.Count} puzzles.");
+
+            foreach (var s in stats)
+            {
+                msg.Description += $"<#{s.PuzzleCode}> {s.DateCompleted:yyyy-MM-dd HH:mm}\n";
+            }
+
+            var channel = await Context.User.GetOrCreateDMChannelAsync();
+            await channel.SendMessageAsync(embed: msg.Build());
+            await channel.CloseAsync();
+        }
+
+        [Command("stats"), Alias("s")]
+        [Summary("Gets user stats.")]
+        public async Task Stats()
+        {
+            var user = Context.User;
+            var message = Context.Message;
+            await message.DeleteAsync();
+
+            var stats = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
+            var msg = new EmbedBuilder()
+                     .WithTitle("Statistics")
+                     .WithColor(Color.Blue)
+                     .WithFooter($"You solved {stats.Count} puzzles.");
 
             msg.Description += ":white_check_mark: Solved\n\n";
             foreach (var s in stats)
@@ -160,67 +150,37 @@ namespace JigsawBot
                 msg.Description += $"<#{s.PuzzleCode}> {s.DateCompleted:yyyy-MM-dd HH:mm}\n";
             }
 
-            if (content == null)
+            var notSolved = SqliteDataAccess.GetPuzzlesNotSolvedByUser(user.Id.ToString());
+
+            msg.Description += "\n:x: Not Solved\n\n";
+            foreach (var notSolvedPuzzle in notSolved)
             {
-                var notSolved = SqliteDataAccess.GetPuzzlesNotSolvedByUser(userId);
-                
-                msg.Description += "\n:x: Not Solved\n\n";
-                foreach (var notSolvedPuzzle in notSolved)
-                {
-                    msg.Description += $"<#{notSolvedPuzzle.Code}>\n";
-                }
+                msg.Description += $"<#{notSolvedPuzzle.Code}>\n";
             }
 
+            var channel = await Context.User.GetOrCreateDMChannelAsync();
             await channel.SendMessageAsync(embed: msg.Build());
             await channel.CloseAsync();
         }
 
         [Command("puzzle"), Alias("p")]
         [Summary("Gets puzzle specific stats.")]
-        public async Task Puzzle([Remainder] string content = null)
+        public async Task Puzzle(IMessageChannel puzzle)
         {
-            var user    = Context.User;
             var message = Context.Message;
             await message.DeleteAsync();
 
-            if (content == null || 
-                content.Equals("all", StringComparison.InvariantCultureIgnoreCase))
-            {
-                var puzzles = SqliteDataAccess.GetPuzzles();
-                
-                var m = new EmbedBuilder()
-                       .WithTitle("All Puzzles")
-                       .WithColor(Color.Blue);
+            string puzzleCode = puzzle.Id.ToString();
 
-                foreach (var p in puzzles.OrderByDescending(p => p.Points))
-                {
-                    m.Description += $"<#{p.Code}> :  {p.Points}\n";
-                }
+            var puzzleModel = SqliteDataAccess.GetPuzzle(puzzleCode);
+            var puzzleInfo  = SqliteDataAccess.GetPuzzleInfo(puzzleCode);
 
-                await ReplyAsync(embed: m.Build());
-                return;
-            }
-
-            var regex = new Regex(@"<#(?<code>\d+)>");
-            var match = regex.Match(content);
-
-            if (!match.Success)
-            {
-                await ReplyAsync($"{user.Mention} Wrong command format. It should be " +
-                                 $"`{_prefix}puzzle #channel-name`");
-                return;
-            }
-
-            string code = match.Groups["code"].Value;
-
-            var puzzle = SqliteDataAccess.GetPuzzle(code);
-            var puzzleInfo = SqliteDataAccess.GetPuzzleInfo(code);
             var msg = new EmbedBuilder()
                      .WithTitle("Info")
                      .WithColor(Color.Blue)
                      .WithFooter($"Solved {puzzleInfo.Count} times.");
 
-            msg.Description = $"This puzzle is worth {puzzle.Points} points." +
+            msg.Description = $"This puzzle is worth {puzzleModel.Points} points." +
                               $"```{"Username",-25}  Date Completed\n\n";
             foreach (var info in puzzleInfo)
             {
@@ -230,7 +190,28 @@ namespace JigsawBot
 
             msg.Description += "```";
 
-            await ReplyAsync($"<#{code}>", embed: msg.Build());
+            await ReplyAsync($"<#{puzzle.Id}>", embed: msg.Build());
+        }
+
+        [Command("puzzle"), Alias("p")]
+        [Summary("Gets stats for all the puzzles.")]
+        public async Task Puzzle()
+        {
+            var message = Context.Message;
+            await message.DeleteAsync();
+            
+            var puzzles = SqliteDataAccess.GetPuzzles();
+
+            var m = new EmbedBuilder()
+                   .WithTitle("All Puzzles")
+                   .WithColor(Color.Blue);
+
+            foreach (var p in puzzles.OrderByDescending(p => p.Points))
+            {
+                m.Description += $"<#{p.Code}> :  {p.Points}\n";
+            }
+
+            await ReplyAsync(embed: m.Build());
         }
 
         [Command("setanswer"), Alias("sa")]
