@@ -33,7 +33,6 @@ namespace JigsawBot
             var provider = services.BuildServiceProvider();
             provider.GetRequiredService<LoggingService>();
             provider.GetRequiredService<CommandHandler>();
-            provider.GetRequiredService<BackupService>();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
         }
@@ -54,7 +53,6 @@ namespace JigsawBot
                     .AddSingleton<CommandHandler>()
                     .AddSingleton<StartupService>()
                     .AddSingleton<LoggingService>()
-                    .AddSingleton<BackupService>()
                     .AddSingleton<Random>()
                     .AddSingleton(Configuration);
         }

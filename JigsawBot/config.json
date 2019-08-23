@@ -1,6 +1,5 @@
 {
   "prefix": "!",
-  "backup_dir": "", 
   "greeting_channel": "",
   "notifications_channel": "",
   "leaderboard_channel": "",
