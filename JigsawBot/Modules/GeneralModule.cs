@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -17,20 +15,17 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var regex = new Regex(@"<#(?<channel>\d+)>\s+(?<text>.*)");
-            var match = regex.Match(text);
+            await ReplyAsync(text);
+        }
 
-            if (!match.Success)
-            {
-                await ReplyAsync(text);
-                return;
-            }
+        [Command("say")]
+        [Summary("Makes the bot say something in a specific channel.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task Say(IMessageChannel channel, [Remainder] string text)
+        {
+            var message = Context.Message;
+            await message.DeleteAsync();
 
-            var c = ulong.Parse(match.Groups["channel"].Value);
-            text = match.Groups["text"].Value;
-
-            var channel = BotClient.Instance.Client.GetChannel(c) as SocketTextChannel ??
-                          throw new Exception($"Channel {c} is not valid.");
             await channel.SendMessageAsync(text);
         }
 
@@ -111,20 +106,8 @@ namespace JigsawBot
         [Command("setquote"), Alias("sq")]
         [Summary("Adds a quote to the database.")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SetQuote([Remainder] string text)
+        public async Task SetQuote(QuoteType type, [Remainder] string quote)
         {
-            var regex = new Regex(@"(?<type>\d+)\s+(?<quote>.+)");
-            var match = regex.Match(text);
-
-            if (!match.Success)
-            {
-                await ReplyAsync("Wrong format.");
-                return;
-            }
-
-            var type  = (QuoteType)int.Parse(match.Groups["type"].Value);
-            var quote = match.Groups["quote"].Value;
-
             var qm = new QuoteModel
                      {
                          Quote = quote,
