@@ -35,11 +35,6 @@ namespace JigsawBot
                 return;
             }
 
-            await BotActions.SendMessageToChannelAsync(Utility.GetGreetingMessage(u.Mention),
-                                                       "greeting_channel");
-
-            await BotActions.SendHelpMessageAsync(u);
-
             if (SqliteDataAccess.GetUserById(u.Id.ToString()) == null)
             {
                 var user = new UserModel
@@ -52,6 +47,10 @@ namespace JigsawBot
 
                 SqliteDataAccess.AddOrUpdateUser(user);
             }
+
+            await BotActions.SendMessageToChannelAsync(Utility.GetGreetingMessage(u.Mention),
+                                                       "greeting_channel");
+            await BotActions.SendHelpMessageAsync(u);
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage s)

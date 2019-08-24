@@ -45,7 +45,6 @@ namespace JigsawBot
 
         [Command("setanswer"), Alias("sa")]
         [Summary("Adds an answer to the DataBase.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetAnswer([Remainder] string content)
         {
             await SetPuzzleDataAsync(content, PuzzleDataType.Answer);
