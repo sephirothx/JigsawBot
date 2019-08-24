@@ -67,7 +67,9 @@
     <Compile Include="DataBase\PuzzleDataType.cs" />
     <Compile Include="DataBase\PuzzleData.cs" />
     <Compile Include="DataBase\QuoteType.cs" />
+    <Compile Include="Modules\AdminModule.cs" />
     <Compile Include="Modules\BotActions.cs" />
+    <Compile Include="Modules\DebugModule.cs" />
     <Compile Include="Modules\GeneralModule.cs" />
     <Compile Include="Modules\PuzzleModule.cs" />
     <Compile Include="Program.cs" />
