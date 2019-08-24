@@ -5,6 +5,7 @@
         CorrectAnswer = 0,
         WrongAnswer   = 1,
         Greeting      = 2,
-        CloseAnswer   = 3
+        CloseAnswer   = 3,
+        AlreadySolved = 4
     }
 }

@@ -15,74 +15,35 @@ namespace JigsawBot
 
         [Command("answer"), Alias("a")]
         [Summary("Answer a puzzle question.")]
-        public async Task Answer([Remainder] string content)
+        public async Task Answer(IMessageChannel puzzle, [Remainder] string content)
         {
             var user    = Context.User;
             var message = Context.Message;
-
             await message.DeleteAsync();
 
-            var regex = new Regex(@"<#(?<code>\d+)>\s*(?<answer>.*)");
-            var match = regex.Match(content.Replace("|", ""));
+            var code   = puzzle.Id.ToString();
+            var userId = user.Id.ToString();
+            var answer = content.Replace("|", "");
 
-            if (!match.Success)
+            if (SqliteDataAccess.HasUserCompletedPuzzle(userId, code))
             {
-                await ReplyAsync($"{user.Mention} Wrong command format. It should be " +
-                                 $"`{_prefix}answer #channel-name answer`");
-                return;
-            }
-
-            var code   = match.Groups["code"].Value;
-            var answer = match.Groups["answer"].Value;
-
-            if (SqliteDataAccess.HasUserCompletedPuzzle(user.Id.ToString(), code))
-            {
-                await ReplyAsync($"{user.Mention} you have already solved this puzzle. " +
-                                 "Try to move on with your life.");
+                await ReplyAsync(Utility.GetAlreadySolvedMessage(user.Mention));
                 return;
             }
 
             var answers      = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.Answer);
             var closeAnswers = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
-            if (Contains(closeAnswers, answer))
-            {
-                await ReplyAsync(Utility.GetCloseAnswerMessage(user.Mention));
-            }
-            else if (Contains(answers, answer))
+            if (Contains(answers, answer))
             {
                 await ReplyAsync(Utility.GetCorrectAnswerMessage(user.Mention));
 
-                var p = SqliteDataAccess.GetPuzzle(code);
-                var u = SqliteDataAccess.GetUserById(user.Id.ToString());
-
-                u.Score += p.Points;
-                u.Solved++;
-                SqliteDataAccess.AddOrUpdateUser(u);
-
-                if (p.Points != 1)
-                {
-                    var usersWhoSolvedPuzzle = SqliteDataAccess.GetUsersWhoCompletedPuzzle(code);
-
-                    foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
-                    {
-                        userWhoSolvedPuzzle.Score -= p.Points;
-                        SqliteDataAccess.AddOrUpdateUser(userWhoSolvedPuzzle);
-                    }
-
-                    SqliteDataAccess.UpdatePuzzlePoints(code);
-                }
-
-                var cpm = new CompletedPuzzleModel
-                          {
-                              UserId        = user.Id.ToString(),
-                              PuzzleCode    = code,
-                              DateCompleted = DateTime.Now.ToUniversalTime()
-                          };
-
-                SqliteDataAccess.NewCompletedPuzzle(cpm);
-
+                BotActions.ProcessCorrectAnswer(userId, code);
                 await BotActions.UpdateLeaderboard();
+            }
+            else if (Contains(closeAnswers, answer))
+            {
+                await ReplyAsync(Utility.GetCloseAnswerMessage(user.Mention));
             }
             else
             {
@@ -167,9 +128,6 @@ namespace JigsawBot
         [Summary("Gets puzzle specific stats.")]
         public async Task Puzzle(IMessageChannel puzzle)
         {
-            var message = Context.Message;
-            await message.DeleteAsync();
-
             string puzzleCode = puzzle.Id.ToString();
 
             var puzzleModel = SqliteDataAccess.GetPuzzle(puzzleCode);
@@ -197,21 +155,18 @@ namespace JigsawBot
         [Summary("Gets stats for all the puzzles.")]
         public async Task Puzzle()
         {
-            var message = Context.Message;
-            await message.DeleteAsync();
-            
             var puzzles = SqliteDataAccess.GetPuzzles();
 
-            var m = new EmbedBuilder()
-                   .WithTitle("All Puzzles")
-                   .WithColor(Color.Blue);
+            var msg = new EmbedBuilder()
+                     .WithTitle("All Puzzles")
+                     .WithColor(Color.Blue);
 
             foreach (var p in puzzles.OrderByDescending(p => p.Points))
             {
-                m.Description += $"<#{p.Code}> :  {p.Points}\n";
+                msg.Description += $"<#{p.Code}> :  {p.Points}\n";
             }
 
-            await ReplyAsync(embed: m.Build());
+            await ReplyAsync(embed: msg.Build());
         }
 
         [Command("setanswer"), Alias("sa")]

@@ -16,12 +16,11 @@ namespace JigsawBot
             var msg = new EmbedBuilder()
                      .WithTitle("User Commands")
                      .WithColor(Color.Blue)
-                     .AddField($"{prefix}help or {prefix}h", "Shows a list of all possible commands.")
+                     .AddField($"{prefix}help or {prefix}h",
+                               "Shows a list of all possible commands.")
                      .AddField($"{prefix}answer or {prefix}a",
-                               "Attempts to solve a puzzle. The answer can be marked in spoiler tags.\n" +
-                               $"`{prefix}answer #channel-name answer`\n"                                +
-                               $"`{prefix}answer #channel-name ||answer||`\n"                            +
-                               $"`{prefix}answer ||#channel-name answer||`")
+                               "Attempts to solve a puzzle. The answer should be marked in `||spoiler tags||`.\n" +
+                               $"`{prefix}answer #channel-name ||answer||`")
                      .AddField($"{prefix}hint",
                                "Gives you a hint about a specific puzzle.\n" +
                                $"`{prefix}hint #channel-name`")
@@ -31,7 +30,7 @@ namespace JigsawBot
                                $"`{prefix}stats @user` or `{prefix}stats user` : displays user's stats")
                      .AddField($"{prefix}puzzle or {prefix}p",
                                "Displays informations regarding all puzzles or a specific puzzle.\n" +
-                               $"`{prefix}puzzle` or `{prefix}puzzle all`\n" +
+                               $"`{prefix}puzzle`\n"                                                 +
                                $"`{prefix}puzzle #channel-name`");
 
             await channel.SendMessageAsync(embed: msg.Build());
@@ -63,6 +62,7 @@ namespace JigsawBot
                                "1 - WrongAnswer\n"                                             +
                                "2 - Greeting\n"                                                +
                                "3 - CloseAnswer\n"                                             +
+                               "4 - AlreadySolved\n"                                           +
                                "`_NAME_` is used as a placeholder for user mention.\n"         +
                                $"`{prefix}setquote 2 Hello _NAME_.`");
 
@@ -94,10 +94,10 @@ namespace JigsawBot
             if (SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode) == null)
             {
                 SqliteDataAccess.AddOrUpdatePuzzle(new PuzzleModel
-                                              {
-                                                  Code   = puzzle.PuzzleCode,
-                                                  Points = Constants.PUZZLE_STARTING_POINTS
-                                              });
+                                                   {
+                                                       Code   = puzzle.PuzzleCode,
+                                                       Points = Constants.PUZZLE_STARTING_POINTS
+                                                   });
                 await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
                                                 "notifications_channel");
             }
@@ -105,10 +105,43 @@ namespace JigsawBot
             SqliteDataAccess.AddPuzzleData(puzzle);
         }
 
+        public static void ProcessCorrectAnswer(string userId, string code)
+        {
+            var puzzle = SqliteDataAccess.GetPuzzle(code);
+            var user = SqliteDataAccess.GetUserById(userId);
+
+            user.Score += puzzle.Points;
+            user.Solved++;
+            SqliteDataAccess.AddOrUpdateUser(user);
+
+            if (puzzle.Points != 1)
+            {
+                var usersWhoSolvedPuzzle = SqliteDataAccess.GetUsersWhoCompletedPuzzle(code);
+
+                foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
+                {
+                    userWhoSolvedPuzzle.Score -= puzzle.Points;
+                    SqliteDataAccess.AddOrUpdateUser(userWhoSolvedPuzzle);
+                }
+
+                SqliteDataAccess.UpdatePuzzlePoints(code);
+            }
+
+            var cpm = new CompletedPuzzleModel
+                      {
+                          UserId        = userId,
+                          PuzzleCode    = code,
+                          DateCompleted = DateTime.UtcNow
+                      };
+
+            SqliteDataAccess.NewCompletedPuzzle(cpm);
+        }
+
         public static async Task UpdateLeaderboard()
         {
             var channel = GetChannelFromConfig("leaderboard_channel");
-            var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ?? throw new Exception("No pinned message");
+            var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ??
+                          throw new Exception("No pinned message");
 
             var users = SqliteDataAccess.GetUsers();
             var msg = new EmbedBuilder()
@@ -124,11 +157,7 @@ namespace JigsawBot
 
             msg.Description += "```";
 
-            await message.ModifyAsync(m =>
-                                      {
-                                          m.Content = null;
-                                          m.Embed = msg.Build();
-                                      });
+            await message.ModifyAsync(m => m.Embed = msg.Build());
         }
     }
 }

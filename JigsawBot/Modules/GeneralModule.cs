@@ -115,7 +115,18 @@ namespace JigsawBot
                      };
             SqliteDataAccess.AddQuote(qm);
 
-            await ReplyAsync($"Added new {type}.");
+            await ReplyAsync($"Added new {type} quote.");
+        }
+
+        [Command("leaderboard"), Alias("l")]
+        [Summary("Updates the leaderboard.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task Leaderboard()
+        {
+            var message = Context.Message;
+            await message.DeleteAsync();
+
+            await BotActions.UpdateLeaderboard();
         }
 
         [Command("help"), Alias("h")]
