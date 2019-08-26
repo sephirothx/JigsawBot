@@ -76,7 +76,7 @@ namespace JigsawBot
             var msg = new EmbedBuilder()
                      .WithTitle("Statistics")
                      .WithColor(Color.Blue)
-                     .WithFooter($"{user.Username} solved {stats.Count} puzzles.");
+                     .WithFooter($"{user.Username} solved {stats.Count} puzzles.", user.GetAvatarUrl());
 
             foreach (var s in stats)
             {
@@ -92,7 +92,7 @@ namespace JigsawBot
         [Summary("Gets user stats.")]
         public async Task Stats()
         {
-            var user = Context.User;
+            var user    = Context.User;
             var message = Context.Message;
             await message.DeleteAsync();
 
@@ -100,7 +100,7 @@ namespace JigsawBot
             var msg = new EmbedBuilder()
                      .WithTitle("Statistics")
                      .WithColor(Color.Blue)
-                     .WithFooter($"You solved {stats.Count} puzzles.");
+                     .WithFooter($"You solved {stats.Count} puzzles.", user.GetAvatarUrl());
 
             msg.Description += ":white_check_mark: Solved\n\n";
             foreach (var s in stats)
