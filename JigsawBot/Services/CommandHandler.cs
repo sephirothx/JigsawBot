@@ -39,10 +39,11 @@ namespace JigsawBot
             {
                 var user = new UserModel
                            {
-                               Id     = u.Id.ToString(),
-                               Name   = u.Username,
-                               Solved = 0,
-                               Score  = 0
+                               Id         = u.Id.ToString(),
+                               Name       = u.Username,
+                               Solved     = 0,
+                               Score      = 0,
+                               HideSolved = true
                            };
 
                 SqliteDataAccess.AddOrUpdateUser(user);

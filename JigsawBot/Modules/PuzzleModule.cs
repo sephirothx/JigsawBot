@@ -35,7 +35,7 @@ namespace JigsawBot
             {
                 await ReplyAsync(Utility.GetCorrectAnswerMessage(user.Mention));
 
-                BotActions.ProcessCorrectAnswer(userId, code);
+                await BotActions.ProcessCorrectAnswer(user, code);
                 await BotActions.UpdateLeaderboard();
             }
             else if (Contains(closeAnswers, answer))

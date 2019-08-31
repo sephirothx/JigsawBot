@@ -105,14 +105,21 @@ namespace JigsawBot
             SqliteDataAccess.AddPuzzleData(puzzle);
         }
 
-        public static void ProcessCorrectAnswer(string userId, string code)
+        public static async Task ProcessCorrectAnswer(IUser user, string code)
         {
-            var puzzle = SqliteDataAccess.GetPuzzle(code);
-            var user = SqliteDataAccess.GetUserById(userId);
+            string userId = user.Id.ToString();
 
-            user.Score += puzzle.Points;
-            user.Solved++;
-            SqliteDataAccess.AddOrUpdateUser(user);
+            var puzzle = SqliteDataAccess.GetPuzzle(code);
+            var dbUser = SqliteDataAccess.GetUserById(userId);
+
+            if (dbUser.HideSolved)
+            {
+                await SetChannelViewPermissionAsync(user, code, true);
+            }
+
+            dbUser.Score += puzzle.Points;
+            dbUser.Solved++;
+            SqliteDataAccess.AddOrUpdateUser(dbUser);
 
             if (puzzle.Points != 1)
             {
@@ -159,5 +166,27 @@ namespace JigsawBot
 
             await message.ModifyAsync(m => m.Embed = msg.Build());
         }
+
+        public static async Task SetSolvedChannelsViewPermissionAsync(IUser user, bool hide)
+        {
+            SqliteDataAccess.UpdateUserPreference_Hide(user.Id.ToString(), hide);
+            var solvedPuzzles = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
+
+            foreach (var puzzle in solvedPuzzles)
+            {
+                await SetChannelViewPermissionAsync(user, puzzle.PuzzleCode, hide);
+            }
+        }
+
+        #region Private
+
+        private static async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
+        {
+            var value   = hide ? PermValue.Deny : PermValue.Inherit;
+            var channel = BotClient.Instance.Client.Guilds.First().GetChannel(ulong.Parse(channelId));
+            await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(viewChannel: value));
+        }
+
+        #endregion
     }
 }

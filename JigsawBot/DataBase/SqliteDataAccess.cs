@@ -106,7 +106,7 @@ namespace JigsawBot
                                                            $"WHERE Code={code}",
                                                            new DynamicParameters())
                                        .First();
-                
+
                 puzzle.Points = puzzle.Points == 1
                                     ? 1
                                     : puzzle.Points / 2;
@@ -126,9 +126,19 @@ namespace JigsawBot
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                connection.Execute("INSERT OR REPLACE INTO USER (Id, Name, Solved, Score) " +
-                                   "VALUES (@Id, @Name, @Solved, @Score)",
+                connection.Execute("INSERT OR REPLACE INTO USER (Id, Name, Solved, Score, HideSolved) " +
+                                   "VALUES (@Id, @Name, @Solved, @Score, @HideSolved)",
                                    user);
+            }
+        }
+
+        public static void UpdateUserPreference_Hide(string userId, bool value)
+        {
+            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            {
+                connection.Execute("UPDATE USER "                       +
+                                   $"SET HideSolved={(value ? 1 : 0)} " +
+                                   $"WHERE Id='{userId}'");
             }
         }
 
@@ -210,7 +220,7 @@ namespace JigsawBot
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
                 var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
-                                                                    $"WHERE UserId='{userId}' " +
+                                                                    $"WHERE UserId='{userId}' "       +
                                                                     $"AND PuzzleCode='{puzzleCode}'",
                                                                     new DynamicParameters());
                 return output.Any();
@@ -234,13 +244,13 @@ namespace JigsawBot
         {
             using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
             {
-                var output = connection.Query<PuzzleModel>("select * from Puzzle "                       +
-                                                         "WHERE Code not in ("                         +
-                                                         "SELECT Puzzle.Code from Puzzle "             +
-                                                         "inner join CompletedPuzzles "                +
-                                                         "on puzzle.code=completedpuzzles.PuzzleCode " +
-                                                         $"where completedPuzzles.UserId='{userId}')",
-                                                         new DynamicParameters());
+                var output = connection.Query<PuzzleModel>("SELECT * FROM Puzzle "                       +
+                                                           "WHERE Code NOT IN ("                         +
+                                                           "SELECT Puzzle.Code FROM Puzzle "             +
+                                                           "INNER JOIN CompletedPuzzles "                +
+                                                           "ON puzzle.code=completedpuzzles.PuzzleCode " +
+                                                           $"WHERE completedPuzzles.UserId='{userId}')",
+                                                           new DynamicParameters());
                 return output.ToList();
             }
         }

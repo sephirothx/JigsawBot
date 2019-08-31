@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -15,6 +16,28 @@ namespace JigsawBot
             await message.DeleteAsync();
 
             await BotActions.SendHelpMessageAsync(user);
+        }
+
+        [Command("hide")]
+        [Summary("Hides solved puzzle channels.")]
+        public async Task Hide()
+        {
+            var user    = Context.User;
+            var message = Context.Message;
+            await message.DeleteAsync();
+
+            await BotActions.SetSolvedChannelsViewPermissionAsync(user, true);
+        }
+
+        [Command("show")]
+        [Summary("Shows solved puzzle channels.")]
+        public async Task Show()
+        {
+            var user    = Context.User;
+            var message = Context.Message;
+            await message.DeleteAsync();
+
+            await BotActions.SetSolvedChannelsViewPermissionAsync(user, false);
         }
     }
 }
