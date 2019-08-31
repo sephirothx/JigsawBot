@@ -184,6 +184,11 @@ namespace JigsawBot
             {
                 await SetChannelViewPermissionAsync(user, puzzle.PuzzleCode, hide);
             }
+
+            await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Verbose,
+                                                                  "Bot",
+                                                                  $"{(hide ? "Hidden" : "Shown")} " +
+                                                                  $"solved puzzles for {user.Username}."));
         }
 
         #region Private
