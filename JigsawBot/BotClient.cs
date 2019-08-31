@@ -42,7 +42,7 @@ namespace JigsawBot
             Client = new DiscordSocketClient(new DiscordSocketConfig
                                              {
                                                  LogLevel         = LogSeverity.Verbose,
-                                                 MessageCacheSize = 1000
+                                                 MessageCacheSize = 100
                                              });
             services.AddSingleton(Client)
                     .AddSingleton(new CommandService(new CommandServiceConfig

@@ -86,5 +86,20 @@ namespace JigsawBot
 
             await ReplyAsync("User scores updated.");
         }
+
+        [Command("updatehidden"), Alias("uh")]
+        [Summary("Updates the hide-solved-puzzles preferences.")]
+        public async Task UpdateHidden()
+        {
+            var users = Context.Guild.Users;
+            foreach (var user in users)
+            {
+                if (user.IsBot) continue;
+
+                await BotActions.SetSolvedChannelsViewPermissionAsync(user, true);
+            }
+
+            await ReplyAsync("Hidden already solved puzzles for all users.");
+        }
     }
 }

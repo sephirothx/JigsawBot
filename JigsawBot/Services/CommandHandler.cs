@@ -26,9 +26,39 @@ namespace JigsawBot
 
             _discord.MessageReceived += OnMessageReceivedAsync;
             _discord.UserJoined      += OnUserJoined;
+            _discord.ReactionAdded   += OnReactionAdded;
+            _discord.ReactionRemoved += OnReactionRemoved;
         }
 
-        private async Task OnUserJoined(SocketGuildUser u)
+        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> message,
+                                           ISocketMessageChannel channel,
+                                           SocketReaction reaction)
+        {
+            if (message.Id == ulong.Parse(_config["preferences_message"]) &&
+                reaction.Emote.Name.Equals("👀"))
+            {
+                var user = reaction.User.Value;
+
+                await BotActions.SetSolvedChannelsViewPermissionAsync(user, false);
+                await BotActions.SendDirectMessageAsync(user, "Your solved puzzles are now being shown.");
+            }
+        }
+
+        private async Task OnReactionRemoved(Cacheable<IUserMessage, ulong> message,
+                                             ISocketMessageChannel channel,
+                                             SocketReaction reaction)
+        {
+            if (message.Id == ulong.Parse(_config["preferences_message"]) &&
+                reaction.Emote.Name.Equals("👀"))
+            {
+                var user = reaction.User.Value;
+
+                await BotActions.SetSolvedChannelsViewPermissionAsync(user, true);
+                await BotActions.SendDirectMessageAsync(user, "Your solved puzzles are now being hidden.");
+            }
+        }
+
+        private static async Task OnUserJoined(SocketGuildUser u)
         {
             if (u.IsBot)
             {

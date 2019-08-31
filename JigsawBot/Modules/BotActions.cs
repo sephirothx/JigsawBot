@@ -78,6 +78,14 @@ namespace JigsawBot
             await ch.SendMessageAsync(message);
         }
 
+        public static async Task SendDirectMessageAsync(IUser user, string message = null, Embed embed = null)
+        {
+            var channel = await user.GetOrCreateDMChannelAsync();
+
+            await channel.SendMessageAsync(message, embed: embed);
+            await channel.CloseAsync();
+        }
+
         public static SocketTextChannel GetChannelFromConfig(string channel)
         {
             var config = BotClient.Instance.Configuration;
