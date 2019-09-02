@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 
 namespace JigsawBot
@@ -100,6 +101,14 @@ namespace JigsawBot
             }
 
             await ReplyAsync("Hidden already solved puzzles for all users.");
+        }
+
+        [Command("purge")]
+        [Summary("Clears all the messages from a channel.")]
+        public async Task Purge(ITextChannel channel)
+        {
+            await BotActions.PurgeChannel(channel);
+            await ReplyAsync($"Channel {channel.Mention} purged.");
         }
     }
 }

@@ -191,6 +191,12 @@ namespace JigsawBot
                                                                   $"solved puzzles for {user.Username}."));
         }
 
+        public static async Task PurgeChannel(ITextChannel channel)
+        {
+            var messages = await channel.GetMessagesAsync().FlattenAsync();
+            await channel.DeleteMessagesAsync(messages);
+        }
+
         #region Private
 
         private static async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
