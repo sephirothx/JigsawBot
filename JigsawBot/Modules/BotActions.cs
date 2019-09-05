@@ -107,7 +107,7 @@ namespace JigsawBot
                                                        Points = Constants.PUZZLE_STARTING_POINTS
                                                    });
                 await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
-                                                "notifications_channel");
+                                                Constants.NOTIFICATIONS_CHANNEL);
             }
 
             SqliteDataAccess.AddPuzzleData(puzzle);
@@ -154,7 +154,7 @@ namespace JigsawBot
 
         public static async Task UpdateLeaderboard()
         {
-            var channel = GetChannelFromConfig("leaderboard_channel");
+            var channel = GetChannelFromConfig(Constants.LEADERBOARD_CHANNEL);
             var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ??
                           throw new Exception("No pinned message");
 
@@ -197,13 +197,18 @@ namespace JigsawBot
             await channel.DeleteMessagesAsync(messages);
         }
 
+        public static async Task SetChannelViewPermissionAsync(IUser user, SocketGuildChannel channel, bool hide)
+        {
+            var value = hide ? PermValue.Deny : PermValue.Allow;
+            await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(viewChannel: value));
+        }
+
         #region Private
 
         private static async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
         {
-            var value   = hide ? PermValue.Deny : PermValue.Inherit;
             var channel = BotClient.Instance.Client.Guilds.First().GetChannel(ulong.Parse(channelId));
-            await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(viewChannel: value));
+            await SetChannelViewPermissionAsync(user, channel, hide);
         }
 
         #endregion

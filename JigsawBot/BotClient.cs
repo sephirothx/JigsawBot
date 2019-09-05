@@ -41,14 +41,15 @@ namespace JigsawBot
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
                                              {
-                                                 LogLevel         = LogSeverity.Verbose,
-                                                 MessageCacheSize = 100
+                                                 LogLevel            = LogSeverity.Verbose,
+                                                 MessageCacheSize    = 100,
+                                                 ExclusiveBulkDelete = true
                                              });
             services.AddSingleton(Client)
                     .AddSingleton(new CommandService(new CommandServiceConfig
                                                      {
                                                          LogLevel       = LogSeverity.Verbose,
-                                                         DefaultRunMode = RunMode.Async,
+                                                         DefaultRunMode = RunMode.Async
                                                      }))
                     .AddSingleton<CommandHandler>()
                     .AddSingleton<StartupService>()
