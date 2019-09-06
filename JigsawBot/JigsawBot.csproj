@@ -60,8 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BotClient.cs" />
+    <Compile Include="BotContainer.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="DataBase\IDataAccess.cs" />
     <Compile Include="DataBase\Models\CompletedPuzzleModel.cs" />
     <Compile Include="DataBase\Models\QuoteModel.cs" />
     <Compile Include="DataBase\PuzzleDataType.cs" />
@@ -81,7 +82,7 @@
     <Compile Include="Services\StartupService.cs" />
     <Compile Include="DataBase\SqliteDataAccess.cs" />
     <Compile Include="DataBase\Models\UserModel.cs" />
-    <Compile Include="Utility.cs" />
+    <Compile Include="Services\QuotesService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

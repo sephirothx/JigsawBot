@@ -28,7 +28,7 @@ namespace JigsawBot
 
         public async Task StartAsync()
         {
-            string discordToken = _config["token"];
+            string discordToken = _config["tokens:discord"];
             if (string.IsNullOrWhiteSpace(discordToken))
             {
                 throw new Exception("Please enter your bot's token into the `config.json` " +

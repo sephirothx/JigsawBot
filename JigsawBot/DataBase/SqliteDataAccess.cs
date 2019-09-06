@@ -7,13 +7,20 @@ using Dapper;
 
 namespace JigsawBot
 {
-    public static class SqliteDataAccess
+    public class SqliteDataAccess : IDataAccess
     {
+        private readonly string _configurationString;
+
+        public SqliteDataAccess()
+        {
+            _configurationString = @"Data Source=.\ProjectDB.db;Version=3;";
+        }
+
         #region Puzzle
 
-        public static List<PuzzleData> GetAllPuzzlesData(PuzzleDataType type)
+        public List<PuzzleData> GetAllPuzzlesData(PuzzleDataType type)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<PuzzleDataModel>("SELECT PuzzleCode, Type, Data " +
                                                                "FROM PUZZLEDATA "               +
@@ -25,14 +32,14 @@ namespace JigsawBot
             }
         }
 
-        public static List<string> GetPuzzleData(string code, PuzzleDataType type)
+        public List<string> GetPuzzleData(string code, PuzzleDataType type)
         {
             return GetPuzzleDataHelper(code, type).Select(p => p.Data).ToList();
         }
 
-        private static List<PuzzleDataModel> GetPuzzleDataHelper(string code, PuzzleDataType type)
+        private List<PuzzleDataModel> GetPuzzleDataHelper(string code, PuzzleDataType type)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<PuzzleDataModel>("SELECT PuzzleCode, Type, Data " +
                                                                "FROM PUZZLEDATA "               +
@@ -42,18 +49,18 @@ namespace JigsawBot
             }
         }
 
-        public static List<PuzzleModel> GetPuzzles()
+        public List<PuzzleModel> GetPuzzles()
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<PuzzleModel>("SELECT * FROM PUZZLE", new DynamicParameters());
                 return output.ToList();
             }
         }
 
-        public static PuzzleModel GetPuzzle(string code)
+        public PuzzleModel GetPuzzle(string code)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<PuzzleModel>("SELECT * FROM PUZZLE " +
                                                            $"WHERE Code={code}", new DynamicParameters());
@@ -68,17 +75,17 @@ namespace JigsawBot
             }
         }
 
-        public static void AddOrUpdatePuzzle(PuzzleModel puzzle)
+        public void AddOrUpdatePuzzle(PuzzleModel puzzle)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("INSERT OR REPLACE INTO PUZZLE (Code, Points) VALUES (@Code, @Points)", puzzle);
             }
         }
 
-        public static void AddPuzzleData(PuzzleDataModel data)
+        public void AddPuzzleData(PuzzleDataModel data)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("INSERT INTO PUZZLEDATA (PuzzleCode, Type, Data) " +
                                    "VALUES (@PuzzleCode, @Type, @Data)",
@@ -86,9 +93,9 @@ namespace JigsawBot
             }
         }
 
-        public static List<CompletedPuzzleModel> GetPuzzleInfo(string code)
+        public List<CompletedPuzzleModel> GetPuzzleInfo(string code)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
                                                                     $"WHERE PuzzleCode='{code}' "     +
@@ -98,9 +105,9 @@ namespace JigsawBot
             }
         }
 
-        public static void UpdatePuzzlePoints(string code)
+        public void UpdatePuzzlePoints(string code)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var puzzle = connection.Query<PuzzleModel>("SELECT * FROM PUZZLE " +
                                                            $"WHERE Code={code}",
@@ -122,9 +129,9 @@ namespace JigsawBot
 
         #region User
 
-        public static void AddOrUpdateUser(UserModel user)
+        public void AddOrUpdateUser(UserModel user)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("INSERT OR REPLACE INTO USER (Id, Name, Solved, Score, HideSolved) " +
                                    "VALUES (@Id, @Name, @Solved, @Score, @HideSolved)",
@@ -132,9 +139,9 @@ namespace JigsawBot
             }
         }
 
-        public static void UpdateUserPreference_Hide(string userId, bool value)
+        public void UpdateUserPreference_Hide(string userId, bool value)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("UPDATE USER "                       +
                                    $"SET HideSolved={(value ? 1 : 0)} " +
@@ -142,9 +149,9 @@ namespace JigsawBot
             }
         }
 
-        public static List<UserModel> GetUsers()
+        public List<UserModel> GetUsers()
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<UserModel>("SELECT * FROM USER ORDER BY Score DESC, Solved ASC",
                                                          new DynamicParameters());
@@ -152,9 +159,9 @@ namespace JigsawBot
             }
         }
 
-        public static UserModel GetUserById(string userId)
+        public UserModel GetUserById(string userId)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<UserModel>($"SELECT * FROM USER WHERE Id='{userId}'",
                                                          new DynamicParameters());
@@ -169,9 +176,9 @@ namespace JigsawBot
             }
         }
 
-        public static UserModel GetUserByName(string username)
+        public UserModel GetUserByName(string username)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<UserModel>($"SELECT * FROM USER WHERE Name='{username}'",
                                                          new DynamicParameters());
@@ -190,9 +197,9 @@ namespace JigsawBot
 
         #region Completed Puzzles
 
-        public static void NewCompletedPuzzle(CompletedPuzzleModel cp)
+        public void NewCompletedPuzzle(CompletedPuzzleModel cp)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("INSERT OR REPLACE INTO COMPLETEDPUZZLES (UserId, PuzzleCode, DateCompleted) " +
                                    "VALUES (@UserId, @PuzzleCode, @DateCompleted)", cp);
@@ -203,9 +210,9 @@ namespace JigsawBot
             }
         }
 
-        public static List<CompletedPuzzleModel> GetUsersCompletedPuzzles(string userId)
+        public List<CompletedPuzzleModel> GetUsersCompletedPuzzles(string userId)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
                                                                     $"WHERE UserId='{userId}' "       +
@@ -215,9 +222,9 @@ namespace JigsawBot
             }
         }
 
-        public static bool HasUserCompletedPuzzle(string userId, string puzzleCode)
+        public bool HasUserCompletedPuzzle(string userId, string puzzleCode)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<CompletedPuzzleModel>("SELECT * FROM COMPLETEDPUZZLES " +
                                                                     $"WHERE UserId='{userId}' "       +
@@ -227,9 +234,9 @@ namespace JigsawBot
             }
         }
 
-        public static List<UserModel> GetUsersWhoCompletedPuzzle(string puzzleCode)
+        public List<UserModel> GetUsersWhoCompletedPuzzle(string puzzleCode)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<UserModel>("select Id, Name, Solved, Score from User " +
                                                          "inner join CompletedPuzzles "              +
@@ -240,9 +247,9 @@ namespace JigsawBot
             }
         }
 
-        public static List<PuzzleModel> GetPuzzlesNotSolvedByUser(string userId)
+        public List<PuzzleModel> GetPuzzlesNotSolvedByUser(string userId)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<PuzzleModel>("SELECT * FROM Puzzle "                       +
                                                            "WHERE Code NOT IN ("                         +
@@ -259,9 +266,9 @@ namespace JigsawBot
 
         #region Quotes
 
-        public static void AddQuote(QuoteModel quote)
+        public void AddQuote(QuoteModel quote)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 connection.Execute("INSERT INTO QUOTES (Quote, Type) " +
                                    "VALUES (@Quote, @Type)",
@@ -269,14 +276,14 @@ namespace JigsawBot
             }
         }
 
-        public static List<string> GetQuotes(QuoteType type)
+        public List<string> GetQuotes(QuoteType type)
         {
             return GetQuotesHelper(type).Select(p => p.Quote).ToList();
         }
 
-        private static List<QuoteModel> GetQuotesHelper(QuoteType type)
+        private List<QuoteModel> GetQuotesHelper(QuoteType type)
         {
-            using (IDbConnection connection = new SQLiteConnection(GetConfigurationString()))
+            using (IDbConnection connection = new SQLiteConnection(_configurationString))
             {
                 var output = connection.Query<QuoteModel>("SELECT Quote, Type " +
                                                           "FROM QUOTES "        +
@@ -284,15 +291,6 @@ namespace JigsawBot
                                                           new DynamicParameters());
                 return output.ToList();
             }
-        }
-
-        #endregion
-
-        #region Private
-
-        private static string GetConfigurationString()
-        {
-            return @"Data Source=.\ProjectDB.db;Version=3;";
         }
 
         #endregion

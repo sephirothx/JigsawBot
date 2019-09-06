@@ -3,35 +3,55 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 
 namespace JigsawBot
 {
     public class BotActions
     {
-        public static async Task SendHelpMessageAsync(SocketGuildUser user)
+        private readonly DiscordSocketClient _client;
+        private readonly IConfigurationRoot  _config;
+        private readonly IDataAccess         _data;
+        private readonly LoggingService      _logger;
+
+        private readonly string _prefix;
+
+        public BotActions(DiscordSocketClient client,
+                          IConfigurationRoot config,
+                          IDataAccess data,
+                          LoggingService logger)
         {
-            string prefix  = BotClient.Instance.Configuration["prefix"];
-            var    channel = await user.GetOrCreateDMChannelAsync();
+            _client = client;
+            _config = config;
+            _data   = data;
+            _logger = logger;
+
+            _prefix = _config["prefix"];
+        }
+
+        public async Task SendHelpMessageAsync(SocketGuildUser user)
+        {
+            var channel = await user.GetOrCreateDMChannelAsync();
 
             var msg = new EmbedBuilder()
                      .WithTitle("User Commands")
                      .WithColor(Color.Blue)
-                     .AddField($"{prefix}help or {prefix}h",
+                     .AddField($"{_prefix}help or {_prefix}h",
                                "Shows a list of all possible commands.")
-                     .AddField($"{prefix}answer or {prefix}a",
+                     .AddField($"{_prefix}answer or {_prefix}a",
                                "Attempts to solve a puzzle. The answer should be marked in `||spoiler tags||`.\n" +
-                               $"`{prefix}answer #channel-name ||answer||`")
-                     .AddField($"{prefix}hint",
+                               $"`{_prefix}answer #channel-name ||answer||`")
+                     .AddField($"{_prefix}hint",
                                "Gives you a hint about a specific puzzle.\n" +
-                               $"`{prefix}hint #channel-name`")
-                     .AddField($"{prefix}stats or {prefix}s",
+                               $"`{_prefix}hint #channel-name`")
+                     .AddField($"{_prefix}stats or {_prefix}s",
                                "Shows some informations about your or another user's puzzle solving performances.\n" +
-                               $"`{prefix}stats` : displays your stats\n"                                            +
-                               $"`{prefix}stats @user` or `{prefix}stats user` : displays user's stats")
-                     .AddField($"{prefix}puzzle or {prefix}p",
+                               $"`{_prefix}stats` : displays your stats\n"                                            +
+                               $"`{_prefix}stats @user` or `{_prefix}stats user` : displays user's stats")
+                     .AddField($"{_prefix}puzzle or {_prefix}p",
                                "Displays informations regarding all puzzles or a specific puzzle.\n" +
-                               $"`{prefix}puzzle`\n"                                                 +
-                               $"`{prefix}puzzle #channel-name`");
+                               $"`{_prefix}puzzle`\n"                                                 +
+                               $"`{_prefix}puzzle #channel-name`");
 
             await channel.SendMessageAsync(embed: msg.Build());
 
@@ -41,22 +61,22 @@ namespace JigsawBot
                 msg = new EmbedBuilder()
                      .WithTitle("Admin Commands")
                      .WithColor(Color.Blue)
-                     .AddField($"{prefix}setanswer or {prefix}sa",
+                     .AddField($"{_prefix}setanswer or {_prefix}sa",
                                "Sets an answer for a puzzle.\n" +
-                               $"`{prefix}setanswer #channel-name answer`")
-                     .AddField($"{prefix}setcloseanswer or {prefix}sca",
+                               $"`{_prefix}setanswer #channel-name answer`")
+                     .AddField($"{_prefix}setcloseanswer or {_prefix}sca",
                                "Sets a close answer for a puzzle.\n" +
-                               $"`{prefix}setcloseanswer #channel-name answer`")
-                     .AddField($"{prefix}sethint or {prefix}sh",
+                               $"`{_prefix}setcloseanswer #channel-name answer`")
+                     .AddField($"{_prefix}sethint or {_prefix}sh",
                                "Sets a hint for a puzzle.\n" +
-                               $"`{prefix}sethint #channel-name answer`")
-                     .AddField($"{prefix}getanswer or {prefix}ga\n"       +
-                               $"{prefix}getcloseanswer or {prefix}gca\n" +
-                               $"{prefix}gethint or {prefix}gh",
+                               $"`{_prefix}sethint #channel-name answer`")
+                     .AddField($"{_prefix}getanswer or {_prefix}ga\n"       +
+                               $"{_prefix}getcloseanswer or {_prefix}gca\n" +
+                               $"{_prefix}gethint or {_prefix}gh",
                                "Gets the Answer/CloseAnswer/Hint for one or every puzzle.\n" +
-                               $"`{prefix}getanswer #channel-name`\n"                        +
-                               $"`{prefix}getanswer` or `{prefix}getanswer all`")
-                     .AddField($"{prefix}setquote or {prefix}sq",
+                               $"`{_prefix}getanswer #channel-name`\n"                        +
+                               $"`{_prefix}getanswer` or `{_prefix}getanswer all`")
+                     .AddField($"{_prefix}setquote or {_prefix}sq",
                                "Adds a new quote of the chosen type to the database. Types:\n" +
                                "0 - CorrectAnswer\n"                                           +
                                "1 - WrongAnswer\n"                                             +
@@ -64,7 +84,7 @@ namespace JigsawBot
                                "3 - CloseAnswer\n"                                             +
                                "4 - AlreadySolved\n"                                           +
                                "`_NAME_` is used as a placeholder for user mention.\n"         +
-                               $"`{prefix}setquote 2 Hello _NAME_.`");
+                               $"`{_prefix}setquote 2 Hello _NAME_.`");
 
                 await channel.SendMessageAsync(embed: msg.Build());
             }
@@ -72,13 +92,13 @@ namespace JigsawBot
             await channel.CloseAsync();
         }
 
-        public static async Task SendMessageToChannelAsync(string message, string channel)
+        public async Task SendMessageToChannelAsync(string message, string channel)
         {
             var ch = GetChannelFromConfig(channel);
             await ch.SendMessageAsync(message);
         }
 
-        public static async Task SendDirectMessageAsync(IUser user, string message = null, Embed embed = null)
+        public async Task SendDirectMessageAsync(IUser user, string message = null, Embed embed = null)
         {
             var channel = await user.GetOrCreateDMChannelAsync();
 
@@ -86,39 +106,36 @@ namespace JigsawBot
             await channel.CloseAsync();
         }
 
-        public static SocketTextChannel GetChannelFromConfig(string channel)
+        public SocketTextChannel GetChannelFromConfig(string channel)
         {
-            var config = BotClient.Instance.Configuration;
-            var client = BotClient.Instance.Client;
-
-            var id = ulong.Parse(config[channel]);
-            var ch = client.GetChannel(id) as SocketTextChannel ?? throw new Exception($"Channel {id} is not valid.");
+            var id = ulong.Parse(_config[channel]);
+            var ch = _client.GetChannel(id) as SocketTextChannel ?? throw new Exception($"Channel {id} is not valid.");
 
             return ch;
         }
 
-        public static async Task AddPuzzleDataAsync(PuzzleDataModel puzzle)
+        public async Task AddPuzzleDataAsync(PuzzleDataModel puzzle)
         {
-            if (SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode) == null)
+            if (_data.GetPuzzle(puzzle.PuzzleCode) == null)
             {
-                SqliteDataAccess.AddOrUpdatePuzzle(new PuzzleModel
-                                                   {
-                                                       Code   = puzzle.PuzzleCode,
-                                                       Points = Constants.PUZZLE_STARTING_POINTS
-                                                   });
+                _data.AddOrUpdatePuzzle(new PuzzleModel
+                                        {
+                                            Code   = puzzle.PuzzleCode,
+                                            Points = Constants.PUZZLE_STARTING_POINTS
+                                        });
                 await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
                                                 Constants.NOTIFICATIONS_CHANNEL);
             }
 
-            SqliteDataAccess.AddPuzzleData(puzzle);
+            _data.AddPuzzleData(puzzle);
         }
 
-        public static async Task ProcessCorrectAnswer(IUser user, string code)
+        public async Task ProcessCorrectAnswer(IUser user, string code)
         {
             string userId = user.Id.ToString();
 
-            var puzzle = SqliteDataAccess.GetPuzzle(code);
-            var dbUser = SqliteDataAccess.GetUserById(userId);
+            var puzzle = _data.GetPuzzle(code);
+            var dbUser = _data.GetUserById(userId);
 
             if (dbUser.HideSolved)
             {
@@ -127,19 +144,19 @@ namespace JigsawBot
 
             dbUser.Score += puzzle.Points;
             dbUser.Solved++;
-            SqliteDataAccess.AddOrUpdateUser(dbUser);
+            _data.AddOrUpdateUser(dbUser);
 
             if (puzzle.Points != 1)
             {
-                var usersWhoSolvedPuzzle = SqliteDataAccess.GetUsersWhoCompletedPuzzle(code);
+                var usersWhoSolvedPuzzle = _data.GetUsersWhoCompletedPuzzle(code);
 
                 foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
                 {
                     userWhoSolvedPuzzle.Score -= puzzle.Points;
-                    SqliteDataAccess.AddOrUpdateUser(userWhoSolvedPuzzle);
+                    _data.AddOrUpdateUser(userWhoSolvedPuzzle);
                 }
 
-                SqliteDataAccess.UpdatePuzzlePoints(code);
+                _data.UpdatePuzzlePoints(code);
             }
 
             var cpm = new CompletedPuzzleModel
@@ -149,16 +166,16 @@ namespace JigsawBot
                           DateCompleted = DateTime.UtcNow
                       };
 
-            SqliteDataAccess.NewCompletedPuzzle(cpm);
+            _data.NewCompletedPuzzle(cpm);
         }
 
-        public static async Task UpdateLeaderboard()
+        public async Task UpdateLeaderboard()
         {
             var channel = GetChannelFromConfig(Constants.LEADERBOARD_CHANNEL);
             var message = (await channel.GetPinnedMessagesAsync()).First() as IUserMessage ??
                           throw new Exception("No pinned message");
 
-            var users = SqliteDataAccess.GetUsers();
+            var users = _data.GetUsers();
             var msg = new EmbedBuilder()
                      .WithTitle("Leaderboard")
                      .WithColor(Color.Blue);
@@ -175,29 +192,29 @@ namespace JigsawBot
             await message.ModifyAsync(m => m.Embed = msg.Build());
         }
 
-        public static async Task SetSolvedChannelsViewPermissionAsync(IUser user, bool hide)
+        public async Task SetSolvedChannelsViewPermissionAsync(IUser user, bool hide)
         {
-            SqliteDataAccess.UpdateUserPreference_Hide(user.Id.ToString(), hide);
-            var solvedPuzzles = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
+            _data.UpdateUserPreference_Hide(user.Id.ToString(), hide);
+            var solvedPuzzles = _data.GetUsersCompletedPuzzles(user.Id.ToString());
 
             foreach (var puzzle in solvedPuzzles)
             {
                 await SetChannelViewPermissionAsync(user, puzzle.PuzzleCode, hide);
             }
 
-            await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Verbose,
-                                                                  "Bot",
-                                                                  $"{(hide ? "Hidden" : "Shown")} " +
-                                                                  $"solved puzzles for {user.Username}."));
+            await _logger.LogAsync(new LogMessage(LogSeverity.Verbose,
+                                                  "Bot",
+                                                  $"{(hide ? "Hidden" : "Shown")} " +
+                                                  $"solved puzzles for {user.Username}."));
         }
 
-        public static async Task PurgeChannel(ITextChannel channel)
+        public async Task PurgeChannel(ITextChannel channel)
         {
             var messages = await channel.GetMessagesAsync().FlattenAsync();
             await channel.DeleteMessagesAsync(messages);
         }
 
-        public static async Task SetChannelViewPermissionAsync(IUser user, SocketGuildChannel channel, bool hide)
+        public async Task SetChannelViewPermissionAsync(IUser user, SocketGuildChannel channel, bool hide)
         {
             var value = hide ? PermValue.Deny : PermValue.Allow;
             await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(viewChannel: value));
@@ -205,9 +222,9 @@ namespace JigsawBot
 
         #region Private
 
-        private static async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
+        private async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
         {
-            var channel = BotClient.Instance.Client.Guilds.First().GetChannel(ulong.Parse(channelId));
+            var channel = _client.Guilds.First().GetChannel(ulong.Parse(channelId));
             await SetChannelViewPermissionAsync(user, channel, hide);
         }
 

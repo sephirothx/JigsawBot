@@ -9,6 +9,19 @@ namespace JigsawBot
     [RequireUserPermission(GuildPermission.Administrator)]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+        private readonly IDataAccess    _data;
+        private readonly LoggingService _logger;
+        private readonly BotActions     _actions;
+
+        public AdminModule(IDataAccess data,
+                           LoggingService logger,
+                           BotActions actions)
+        {
+            _data    = data;
+            _logger  = logger;
+            _actions = actions;
+        }
+
         [Command("say")]
         [Summary("Makes the bot say something.")]
         public async Task Say([Remainder] string text)
@@ -38,7 +51,7 @@ namespace JigsawBot
                          Quote = quote,
                          Type  = type
                      };
-            SqliteDataAccess.AddQuote(qm);
+            _data.AddQuote(qm);
 
             await ReplyAsync($"Added new {type} quote.");
         }
@@ -111,10 +124,9 @@ namespace JigsawBot
                              Data       = answer
                          };
 
-            await BotActions.AddPuzzleDataAsync(puzzle);
+            await _actions.AddPuzzleDataAsync(puzzle);
 
-            await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Debug, "Bot",
-                                                                  $"Added answer: {code} = {answer}"));
+            await _logger.LogAsync(new LogMessage(LogSeverity.Debug, "Bot", $"Added answer: {code} = {answer}"));
             await ReplyAsync($"Added {type} to problem <#{code}>.");
         }
 
@@ -128,7 +140,7 @@ namespace JigsawBot
 
             if (content?.Equals("all") ?? true)
             {
-                var puzzles = SqliteDataAccess.GetAllPuzzlesData(type);
+                var puzzles = _data.GetAllPuzzlesData(type);
                 var msg = new EmbedBuilder
                           {
                               Title = $"All {type}s",
@@ -160,7 +172,7 @@ namespace JigsawBot
             }
 
             var code = match.Groups["code"].Value;
-            var data = SqliteDataAccess.GetPuzzleData(code, type);
+            var data = _data.GetPuzzleData(code, type);
 
             if (data.Any())
             {

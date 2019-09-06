@@ -4,11 +4,11 @@
     {
         public const int PUZZLE_STARTING_POINTS = 1024;
 
-        public const string GREETING_CHANNEL      = "greeting_channel";
-        public const string NOTIFICATIONS_CHANNEL = "notifications_channel";
-        public const string LEADERBOARD_CHANNEL   = "leaderboard_channel";
-        public const string VOICE_CHANNEL         = "voice_channel";
+        public const string GREETING_CHANNEL      = "channels:greeting";
+        public const string NOTIFICATIONS_CHANNEL = "channels:notifications";
+        public const string LEADERBOARD_CHANNEL   = "channels:leaderboard";
+        public const string VOICE_CHANNEL         = "channels:voice";
 
-        public const string PREFERENCES_MESSAGE = "preferences_message";
+        public const string PREFERENCES_MESSAGE = "messages:preferences";
     }
 }

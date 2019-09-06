@@ -8,7 +8,7 @@ namespace JigsawBot
         {
             try
             {
-                BotClient.Instance.RunAsync().Wait();
+                BotContainer.RunAsync().Wait();
             }
             catch (Exception e)
             {

@@ -10,6 +10,19 @@ namespace JigsawBot
 {
     public class PuzzleModule : ModuleBase<SocketCommandContext>
     {
+        private readonly IDataAccess   _data;
+        private readonly BotActions    _actions;
+        private readonly QuotesService _quotes;
+
+        public PuzzleModule(IDataAccess data,
+                            BotActions actions,
+                            QuotesService quotes)
+        {
+            _data    = data;
+            _actions = actions;
+            _quotes  = quotes;
+        }
+
         [Command("answer"), Alias("a")]
         [Summary("Answer a puzzle question.")]
         public async Task Answer(IMessageChannel puzzle, [Remainder] string content)
@@ -22,29 +35,29 @@ namespace JigsawBot
             var userId = user.Id.ToString();
             var answer = content.Replace("|", "");
 
-            if (SqliteDataAccess.HasUserCompletedPuzzle(userId, code))
+            if (_data.HasUserCompletedPuzzle(userId, code))
             {
-                await ReplyAsync(Utility.GetAlreadySolvedMessage(user.Mention));
+                await ReplyAsync(_quotes.GetAlreadySolvedMessage(user.Mention));
                 return;
             }
 
-            var answers      = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.Answer);
-            var closeAnswers = SqliteDataAccess.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
+            var answers      = _data.GetPuzzleData(code, PuzzleDataType.Answer);
+            var closeAnswers = _data.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
             if (Contains(answers, answer))
             {
-                await ReplyAsync(Utility.GetCorrectAnswerMessage(user.Mention));
+                await ReplyAsync(_quotes.GetCorrectAnswerMessage(user.Mention));
 
-                await BotActions.ProcessCorrectAnswer(user, code);
-                await BotActions.UpdateLeaderboard();
+                await _actions.ProcessCorrectAnswer(user, code);
+                await _actions.UpdateLeaderboard();
             }
             else if (Contains(closeAnswers, answer))
             {
-                await ReplyAsync(Utility.GetCloseAnswerMessage(user.Mention));
+                await ReplyAsync(_quotes.GetCloseAnswerMessage(user.Mention));
             }
             else
             {
-                await ReplyAsync(Utility.GetWrongAnswerMessage(user.Mention));
+                await ReplyAsync(_quotes.GetWrongAnswerMessage(user.Mention));
             }
         }
 
@@ -55,7 +68,7 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var hints = SqliteDataAccess.GetPuzzleData(puzzle.Id.ToString(),
+            var hints = _data.GetPuzzleData(puzzle.Id.ToString(),
                                                        PuzzleDataType.Hint);
             if (hints.Any())
             {
@@ -72,7 +85,7 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var stats = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
+            var stats = _data.GetUsersCompletedPuzzles(user.Id.ToString());
             var msg = new EmbedBuilder()
                      .WithTitle("Statistics")
                      .WithColor(Color.Blue)
@@ -96,7 +109,7 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var stats = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id.ToString());
+            var stats = _data.GetUsersCompletedPuzzles(user.Id.ToString());
             var msg = new EmbedBuilder()
                      .WithTitle("Statistics")
                      .WithColor(Color.Blue)
@@ -108,7 +121,7 @@ namespace JigsawBot
                 msg.Description += $"<#{s.PuzzleCode}> {s.DateCompleted:yyyy-MM-dd HH:mm}\n";
             }
 
-            var notSolved = SqliteDataAccess.GetPuzzlesNotSolvedByUser(user.Id.ToString());
+            var notSolved = _data.GetPuzzlesNotSolvedByUser(user.Id.ToString());
 
             msg.Description += "\n:x: Not Solved\n\n";
             foreach (var notSolvedPuzzle in notSolved)
@@ -127,8 +140,8 @@ namespace JigsawBot
         {
             string puzzleCode = puzzle.Id.ToString();
 
-            var puzzleModel = SqliteDataAccess.GetPuzzle(puzzleCode);
-            var puzzleInfo  = SqliteDataAccess.GetPuzzleInfo(puzzleCode);
+            var puzzleModel = _data.GetPuzzle(puzzleCode);
+            var puzzleInfo  = _data.GetPuzzleInfo(puzzleCode);
 
             var msg = new EmbedBuilder()
                      .WithTitle("Info")
@@ -139,7 +152,7 @@ namespace JigsawBot
                               $"```{"Username",-25}  Date Completed\n\n";
             foreach (var info in puzzleInfo)
             {
-                msg.Description += $"{SqliteDataAccess.GetUserById(info.UserId).Name,-25}" +
+                msg.Description += $"{_data.GetUserById(info.UserId).Name,-25}" +
                                    $"{info.DateCompleted,16:yyyy-MM-dd HH:mm}\n";
             }
 
@@ -152,7 +165,7 @@ namespace JigsawBot
         [Summary("Gets stats for all the puzzles.")]
         public async Task Puzzle()
         {
-            var puzzles = SqliteDataAccess.GetPuzzles();
+            var puzzles = _data.GetPuzzles();
 
             var msg = new EmbedBuilder()
                      .WithTitle("All Puzzles")

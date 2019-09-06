@@ -10,45 +10,57 @@ namespace JigsawBot
 {
     public class CommandHandler
     {
-        private readonly DiscordSocketClient _discord;
+        private readonly DiscordSocketClient _client;
         private readonly CommandService      _commands;
         private readonly IConfigurationRoot  _config;
         private readonly IServiceProvider    _provider;
+        private readonly IDataAccess         _data;
+        private readonly LoggingService      _logger;
+        private readonly BotActions          _actions;
+        private readonly QuotesService       _quotes;
 
-        public CommandHandler(DiscordSocketClient discord,
+        public CommandHandler(DiscordSocketClient client,
                               CommandService commands,
                               IConfigurationRoot config,
-                              IServiceProvider provider)
+                              IServiceProvider provider,
+                              IDataAccess data,
+                              LoggingService logger,
+                              BotActions actions,
+                              QuotesService quotes)
         {
-            _discord  = discord;
+            _client  = client;
             _commands = commands;
             _config   = config;
             _provider = provider;
+            _data     = data;
+            _logger   = logger;
+            _actions  = actions;
+            _quotes   = quotes;
 
-            _discord.MessageReceived       += OnMessageReceivedAsync;
-            _discord.UserJoined            += OnUserJoined;
-            _discord.ReactionAdded         += OnReactionAdded;
-            _discord.ReactionRemoved       += OnReactionRemoved;
-            _discord.UserVoiceStateUpdated += OnUserVoiceStateUpdated;
+            _client.MessageReceived       += OnMessageReceivedAsync;
+            _client.UserJoined            += OnUserJoined;
+            _client.ReactionAdded         += OnReactionAdded;
+            _client.ReactionRemoved       += OnReactionRemoved;
+            _client.UserVoiceStateUpdated += OnUserVoiceStateUpdated;
         }
 
-        private static async Task OnUserVoiceStateUpdated(SocketUser user,
-                                                          SocketVoiceState state_1,
-                                                          SocketVoiceState state_2)
+        private async Task OnUserVoiceStateUpdated(SocketUser user,
+                                                   SocketVoiceState state_1,
+                                                   SocketVoiceState state_2)
         {
             if (user.IsBot) return;
             
-            var channel = BotActions.GetChannelFromConfig(Constants.VOICE_CHANNEL);
+            var channel = _actions.GetChannelFromConfig(Constants.VOICE_CHANNEL);
 
             if (state_1.VoiceChannel == null && state_2.VoiceChannel != null)
             {
                 var log = new LogMessage(LogSeverity.Verbose, "Bot",
                                          $"{user.Username} joined voice channel {state_2.VoiceChannel.Name}. " +
                                          $"Users in channel: {state_2.VoiceChannel.Users.Count(u => !u.IsBot)}.");
-                await LoggingService.Instance.LogAsync(log);
+                await _logger.LogAsync(log);
 
-                await BotActions.SetChannelViewPermissionAsync(user, channel, false);
-                await BotActions.SendDirectMessageAsync(user,
+                await _actions.SetChannelViewPermissionAsync(user, channel, false);
+                await _actions.SendDirectMessageAsync(user,
                                                         $"You now have access to {channel.Mention}. "                              +
                                                         "You can use it to discuss puzzles with the other users in the voice chat " +
                                                         "and it will be wiped when everyone leaves the voice chat.");
@@ -58,12 +70,12 @@ namespace JigsawBot
                 var log = new LogMessage(LogSeverity.Verbose, "Bot",
                                          $"{user.Username} left voice channel {state_1.VoiceChannel.Name}. " +
                                          $"Users in channel: {state_1.VoiceChannel.Users.Count(u => !u.IsBot)}.");
-                await LoggingService.Instance.LogAsync(log);
+                await _logger.LogAsync(log);
 
-                await BotActions.SetChannelViewPermissionAsync(user, channel, true);
+                await _actions.SetChannelViewPermissionAsync(user, channel, true);
                 if (state_1.VoiceChannel.Users.Count(u => !u.IsBot) == 0)
                 {
-                    await BotActions.PurgeChannel(channel);
+                    await _actions.PurgeChannel(channel);
                 }
             }
         }
@@ -77,8 +89,8 @@ namespace JigsawBot
             {
                 var user = reaction.User.Value;
 
-                await BotActions.SetSolvedChannelsViewPermissionAsync(user, false);
-                await BotActions.SendDirectMessageAsync(user, "Your solved puzzles are now being shown.");
+                await _actions.SetSolvedChannelsViewPermissionAsync(user, false);
+                await _actions.SendDirectMessageAsync(user, "Your solved puzzles are now being shown.");
             }
         }
 
@@ -91,19 +103,19 @@ namespace JigsawBot
             {
                 var user = reaction.User.Value;
 
-                await BotActions.SetSolvedChannelsViewPermissionAsync(user, true);
-                await BotActions.SendDirectMessageAsync(user, "Your solved puzzles are now being hidden.");
+                await _actions.SetSolvedChannelsViewPermissionAsync(user, true);
+                await _actions.SendDirectMessageAsync(user, "Your solved puzzles are now being hidden.");
             }
         }
 
-        private static async Task OnUserJoined(SocketGuildUser u)
+        private async Task OnUserJoined(SocketGuildUser u)
         {
             if (u.IsBot)
             {
                 return;
             }
 
-            if (SqliteDataAccess.GetUserById(u.Id.ToString()) == null)
+            if (_data.GetUserById(u.Id.ToString()) == null)
             {
                 var user = new UserModel
                            {
@@ -114,12 +126,12 @@ namespace JigsawBot
                                HideSolved = true
                            };
 
-                SqliteDataAccess.AddOrUpdateUser(user);
+                _data.AddOrUpdateUser(user);
             }
 
-            await BotActions.SendMessageToChannelAsync(Utility.GetGreetingMessage(u.Mention),
-                                                       Constants.GREETING_CHANNEL);
-            await BotActions.SendHelpMessageAsync(u);
+            await _actions.SendMessageToChannelAsync(_quotes.GetGreetingMessage(u.Mention),
+                                                     Constants.GREETING_CHANNEL);
+            await _actions.SendHelpMessageAsync(u);
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage s)
@@ -129,25 +141,24 @@ namespace JigsawBot
                 return;
             }
 
-            if (msg.Author.Id == _discord.CurrentUser.Id)
+            if (msg.Author.Id == _client.CurrentUser.Id)
             {
                 return;
             }
 
-            var context = new SocketCommandContext(_discord, msg);
+            var context = new SocketCommandContext(_client, msg);
 
             int argPos = 0;
             if (msg.HasStringPrefix(_config["prefix"], ref argPos) ||
-                msg.HasMentionPrefix(_discord.CurrentUser, ref argPos))
+                msg.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
-                await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Verbose, "Bot",
-                                                                      $"{msg.Author.Id} - {msg.Author.Username}: {msg.Content}"));
+                await _logger.LogAsync(new LogMessage(LogSeverity.Verbose, "Bot",
+                                                      $"{msg.Author.Id} - {msg.Author.Username}: {msg.Content}"));
                 var result = await _commands.ExecuteAsync(context, argPos, _provider);
 
                 if (!result.IsSuccess)
                 {
-                    await LoggingService.Instance.LogAsync(new LogMessage(LogSeverity.Error, "Bot",
-                                                                          result.ToString()));
+                    await _logger.LogAsync(new LogMessage(LogSeverity.Error, "Bot", result.ToString()));
                 }
             }
         }

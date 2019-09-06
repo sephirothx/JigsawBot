@@ -8,15 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace JigsawBot
 {
-    public class BotClient
+    public class BotContainer
     {
         public IConfigurationRoot Configuration { get; }
-        public DiscordSocketClient Client { get; private set; }
 
-        private static BotClient _instance;
-        public static BotClient Instance => _instance ?? (_instance = new BotClient());
-
-        public BotClient()
+        public BotContainer()
         {
             var builder = new ConfigurationBuilder()
                          .SetBasePath(AppContext.BaseDirectory)
@@ -25,12 +21,22 @@ namespace JigsawBot
             Configuration = builder.Build();
         }
 
-        public async Task RunAsync()
+        public static async Task RunAsync()
+        {
+            var startup = new BotContainer();
+            await startup.RunHelperAsync();
+        }
+
+
+        public async Task RunHelperAsync()
         {
             var services = new ServiceCollection();
             ConfigureServices(services);
 
             var provider = services.BuildServiceProvider();
+            provider.GetRequiredService<IDataAccess>();
+            provider.GetRequiredService<BotActions>();
+            provider.GetRequiredService<QuotesService>();
             provider.GetRequiredService<LoggingService>();
             provider.GetRequiredService<CommandHandler>();
 
@@ -39,13 +45,14 @@ namespace JigsawBot
 
         private void ConfigureServices(ServiceCollection services)
         {
-            Client = new DiscordSocketClient(new DiscordSocketConfig
-                                             {
-                                                 LogLevel            = LogSeverity.Verbose,
-                                                 MessageCacheSize    = 100,
-                                                 ExclusiveBulkDelete = true
-                                             });
-            services.AddSingleton(Client)
+            var client = new DiscordSocketClient(new DiscordSocketConfig
+                                                 {
+                                                     LogLevel            = LogSeverity.Verbose,
+                                                     MessageCacheSize    = 100,
+                                                     ExclusiveBulkDelete = true
+                                                 });
+
+            services.AddSingleton(client)
                     .AddSingleton(new CommandService(new CommandServiceConfig
                                                      {
                                                          LogLevel       = LogSeverity.Verbose,
@@ -54,7 +61,10 @@ namespace JigsawBot
                     .AddSingleton<CommandHandler>()
                     .AddSingleton<StartupService>()
                     .AddSingleton<LoggingService>()
+                    .AddSingleton<QuotesService>()
                     .AddSingleton<Random>()
+                    .AddSingleton<IDataAccess>(new SqliteDataAccess())
+                    .AddSingleton<BotActions>()
                     .AddSingleton(Configuration);
         }
     }

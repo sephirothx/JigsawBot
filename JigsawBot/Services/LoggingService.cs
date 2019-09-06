@@ -12,12 +12,9 @@ namespace JigsawBot
         private string LogDirectory { get; }
         private string LogFile => Path.Combine(LogDirectory, $"{DateTime.UtcNow:yyyy-MM-dd}.txt");
 
-        public static LoggingService Instance { get; private set; }
-
         public LoggingService(DiscordSocketClient discord, CommandService commands)
         {
             LogDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
-            Instance     = this;
 
             discord.Log  += LogAsync;
             commands.Log += LogAsync;

@@ -7,6 +7,16 @@ namespace JigsawBot
     [RequireOwner]
     public class DebugModule : ModuleBase<SocketCommandContext>
     {
+        private readonly IDataAccess _data;
+        private readonly BotActions  _actions;
+
+        public DebugModule(IDataAccess data,
+                           BotActions actions)
+        {
+            _data    = data;
+            _actions = actions;
+        }
+
         [Command("leaderboard"), Alias("l")]
         [Summary("Updates the leaderboard.")]
         public async Task Leaderboard()
@@ -14,7 +24,7 @@ namespace JigsawBot
             var message = Context.Message;
             await message.DeleteAsync();
 
-            await BotActions.UpdateLeaderboard();
+            await _actions.UpdateLeaderboard();
         }
 
         [Command("updateusers"), Alias("upu")]
@@ -24,7 +34,7 @@ namespace JigsawBot
             var users = Context.Guild.Users;
             foreach (var user in users)
             {
-                if (user.IsBot || SqliteDataAccess.GetUserById(user.Id.ToString()) != null)
+                if (user.IsBot || _data.GetUserById(user.Id.ToString()) != null)
                     continue;
 
                 var u = new UserModel
@@ -35,7 +45,7 @@ namespace JigsawBot
                             Score  = 0
                         };
 
-                SqliteDataAccess.AddOrUpdateUser(u);
+                _data.AddOrUpdateUser(u);
             }
 
             await ReplyAsync("User database updated.");
@@ -45,11 +55,11 @@ namespace JigsawBot
         [Summary("Updates the puzzle database.")]
         public async Task UpdatePuzzles()
         {
-            var puzzles = SqliteDataAccess.GetPuzzles();
+            var puzzles = _data.GetPuzzles();
 
             foreach (var puzzle in puzzles)
             {
-                var puzzleInfo = SqliteDataAccess.GetPuzzleInfo(puzzle.Code);
+                var puzzleInfo = _data.GetPuzzleInfo(puzzle.Code);
                 int n          = puzzleInfo.Count;
 
                 if (n > 10)
@@ -61,7 +71,7 @@ namespace JigsawBot
                     puzzle.Points = Constants.PUZZLE_STARTING_POINTS / (1 << n);
                 }
 
-                SqliteDataAccess.AddOrUpdatePuzzle(puzzle);
+                _data.AddOrUpdatePuzzle(puzzle);
             }
 
             await ReplyAsync("Puzzle database updated.");
@@ -71,18 +81,18 @@ namespace JigsawBot
         [Summary("Updates the scores in the user database.")]
         public async Task CalculateUserScore()
         {
-            var users = SqliteDataAccess.GetUsers();
+            var users = _data.GetUsers();
             foreach (var user in users)
             {
                 user.Score = 0;
-                var solved = SqliteDataAccess.GetUsersCompletedPuzzles(user.Id);
+                var solved = _data.GetUsersCompletedPuzzles(user.Id);
                 foreach (var puzzle in solved)
                 {
-                    var p = SqliteDataAccess.GetPuzzle(puzzle.PuzzleCode);
+                    var p = _data.GetPuzzle(puzzle.PuzzleCode);
                     user.Score += p.Points;
                 }
 
-                SqliteDataAccess.AddOrUpdateUser(user);
+                _data.AddOrUpdateUser(user);
             }
 
             await ReplyAsync("User scores updated.");
@@ -97,7 +107,7 @@ namespace JigsawBot
             {
                 if (user.IsBot) continue;
 
-                await BotActions.SetSolvedChannelsViewPermissionAsync(user, true);
+                await _actions.SetSolvedChannelsViewPermissionAsync(user, true);
             }
 
             await ReplyAsync("Hidden already solved puzzles for all users.");
@@ -107,7 +117,7 @@ namespace JigsawBot
         [Summary("Clears all the messages from a channel.")]
         public async Task Purge(ITextChannel channel)
         {
-            await BotActions.PurgeChannel(channel);
+            await _actions.PurgeChannel(channel);
             await ReplyAsync($"Channel {channel.Mention} purged.");
         }
     }
