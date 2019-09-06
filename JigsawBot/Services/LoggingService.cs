@@ -41,7 +41,7 @@ namespace JigsawBot
                              $"[{msg.Severity}] "           +
                              $"{msg.Source}: "              +
                              $"{msg.Exception?.ToString() ?? msg.Message}";
-            File.AppendAllText(LogFile, logText + "\n");
+            File.AppendAllText(LogFile, logText + Environment.NewLine);
 
             return Console.Out.WriteLineAsync(logText);
         }
