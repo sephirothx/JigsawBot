@@ -65,9 +65,8 @@
     <Compile Include="DataBase\IDataAccess.cs" />
     <Compile Include="DataBase\Models\CompletedPuzzleModel.cs" />
     <Compile Include="DataBase\Models\QuoteModel.cs" />
-    <Compile Include="DataBase\PuzzleDataType.cs" />
     <Compile Include="DataBase\PuzzleData.cs" />
-    <Compile Include="DataBase\QuoteType.cs" />
+    <Compile Include="Enums.cs" />
     <Compile Include="Modules\AdminModule.cs" />
     <Compile Include="Modules\BotActions.cs" />
     <Compile Include="Modules\DebugModule.cs" />
