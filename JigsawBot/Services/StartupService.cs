@@ -10,10 +10,10 @@ namespace JigsawBot
 {
     public class StartupService
     {
-        private readonly IServiceProvider _provider;
+        private readonly IServiceProvider    _provider;
         private readonly DiscordSocketClient _discord;
-        private readonly CommandService _commands;
-        private readonly IConfigurationRoot _config;
+        private readonly CommandService      _commands;
+        private readonly IConfigurationRoot  _config;
 
         public StartupService(IServiceProvider provider,
                               DiscordSocketClient discord,

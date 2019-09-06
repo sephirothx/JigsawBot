@@ -1,6 +1,9 @@
 {
   "prefix": "!",
 
+  "backup_path": "C:\\JigsawData\\backup_path",
+  "logs_path": "C:\\JigsawData\\logs", 
+
   "channels": {
     "greeting": "",
     "notifications": "",

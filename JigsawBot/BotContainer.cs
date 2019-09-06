@@ -15,7 +15,7 @@ namespace JigsawBot
         public BotContainer()
         {
             var builder = new ConfigurationBuilder()
-                         .SetBasePath(AppContext.BaseDirectory)
+                         .SetBasePath(@"C:\JigsawData\")
                          .AddJsonFile("config.json");
 
             Configuration = builder.Build();
@@ -34,11 +34,9 @@ namespace JigsawBot
             ConfigureServices(services);
 
             var provider = services.BuildServiceProvider();
-            provider.GetRequiredService<IDataAccess>();
-            provider.GetRequiredService<BotActions>();
-            provider.GetRequiredService<QuotesService>();
             provider.GetRequiredService<LoggingService>();
             provider.GetRequiredService<CommandHandler>();
+            provider.GetRequiredService<BackupService>();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
         }
@@ -61,9 +59,10 @@ namespace JigsawBot
                     .AddSingleton<CommandHandler>()
                     .AddSingleton<StartupService>()
                     .AddSingleton<LoggingService>()
-                    .AddSingleton<QuotesService>()
+                    .AddTransient<QuotesService>()
                     .AddSingleton<Random>()
-                    .AddSingleton<IDataAccess>(new SqliteDataAccess())
+                    .AddSingleton<IDataAccess, SqliteDataAccess>()
+                    .AddSingleton<BackupService>()
                     .AddSingleton<BotActions>()
                     .AddSingleton(Configuration);
         }

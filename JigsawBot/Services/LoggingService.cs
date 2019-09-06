@@ -4,17 +4,22 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 
 namespace JigsawBot
 {
     public class LoggingService
     {
-        private string LogDirectory { get; }
+        private readonly IConfigurationRoot _config;
+
+        private string LogDirectory => Path.Combine(_config["logs_path"], $"{DateTime.UtcNow:yyyy-MM}");
         private string LogFile => Path.Combine(LogDirectory, $"{DateTime.UtcNow:yyyy-MM-dd}.txt");
 
-        public LoggingService(DiscordSocketClient discord, CommandService commands)
+        public LoggingService(DiscordSocketClient discord,
+                              CommandService commands,
+                              IConfigurationRoot config)
         {
-            LogDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+            _config = config;
 
             discord.Log  += LogAsync;
             commands.Log += LogAsync;

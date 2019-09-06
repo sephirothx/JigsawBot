@@ -43,5 +43,11 @@ namespace JigsawBot
         List<string> GetQuotes(QuoteType type);
 
         #endregion
+
+        #region Backup
+
+        void LocalBackup(string path);
+
+        #endregion
     }
 }
