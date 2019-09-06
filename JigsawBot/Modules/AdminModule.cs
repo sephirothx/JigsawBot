@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -58,87 +57,76 @@ namespace JigsawBot
 
         [Command("setanswer"), Alias("sa")]
         [Summary("Adds an answer to the DataBase.")]
-        public async Task SetAnswer([Remainder] string content)
+        public async Task SetAnswer(IMessageChannel channel, [Remainder] string content)
         {
-            await SetPuzzleDataAsync(content, PuzzleDataType.Answer);
+            await SetPuzzleDataAsync(channel, content, PuzzleDataType.Answer);
         }
 
         [Command("setcloseanswer"), Alias("sca")]
         [Summary("Adds a close answer to the DataBase.")]
-        public async Task SetCloseAnswer([Remainder] string content)
+        public async Task SetCloseAnswer(IMessageChannel channel, [Remainder] string content)
         {
-            await SetPuzzleDataAsync(content, PuzzleDataType.CloseAnswer);
+            await SetPuzzleDataAsync(channel, content, PuzzleDataType.CloseAnswer);
         }
 
         [Command("sethint"), Alias("sh")]
         [Summary("Adds a hint to the DataBase.")]
-        public async Task SetHint([Remainder] string content)
+        public async Task SetHint(IMessageChannel channel, [Remainder] string content)
         {
-            await SetPuzzleDataAsync(content, PuzzleDataType.Hint);
+            await SetPuzzleDataAsync(channel, content, PuzzleDataType.Hint);
         }
 
         [Command("getanswer"), Alias("ga")]
         [Summary("Gets answers from the DataBase.")]
-        public async Task GetAnswer([Remainder] string content = null)
+        public async Task GetAnswer(IMessageChannel channel = null)
         {
-            await GetPuzzleDataAsync(content, PuzzleDataType.Answer);
+            await GetPuzzleDataAsync(channel, PuzzleDataType.Answer);
         }
 
         [Command("getcloseanswer"), Alias("gca")]
         [Summary("Gets close answers from the DataBase.")]
-        public async Task GetCloseAnswer([Remainder] string content = null)
+        public async Task GetCloseAnswer(IMessageChannel channel = null)
         {
-            await GetPuzzleDataAsync(content, PuzzleDataType.CloseAnswer);
+            await GetPuzzleDataAsync(channel, PuzzleDataType.CloseAnswer);
         }
 
         [Command("gethint"), Alias("gh")]
         [Summary("Gets hints from the DataBase.")]
-        public async Task GetHint([Remainder] string content = null)
+        public async Task GetHint(IMessageChannel channel = null)
         {
-            await GetPuzzleDataAsync(content, PuzzleDataType.Hint);
+            await GetPuzzleDataAsync(channel, PuzzleDataType.Hint);
         }
 
         #region Private
 
-        private async Task SetPuzzleDataAsync(string content, PuzzleDataType type)
+        private async Task SetPuzzleDataAsync(IMessageChannel channel, string content, PuzzleDataType type)
         {
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var regex = new Regex(@"<#(?<code>\d+)>\s*(?<answer>.*)");
-            var match = regex.Match(content);
-
-            if (!match.Success)
-            {
-                await ReplyAsync($"{Context.User.Mention} Wrong command format.");
-                return;
-            }
-
-            var code   = match.Groups["code"].Value;
-            var answer = match.Groups["answer"].Value;
+            string code = channel.Id.ToString();
 
             var puzzle = new PuzzleDataModel
                          {
                              PuzzleCode = code,
                              Type       = type,
-                             Data       = answer
+                             Data       = content
                          };
 
             await _actions.AddPuzzleDataAsync(puzzle);
 
-            await _logger.LogAsync(new LogMessage(LogSeverity.Debug, "Bot", $"Added answer: {code} = {answer}"));
+            await _logger.LogAsync(new LogMessage(LogSeverity.Debug, "Bot", $"Added answer: {code} = {content}"));
             await ReplyAsync($"Added {type} to problem <#{code}>.");
         }
 
-        private async Task GetPuzzleDataAsync(string content, PuzzleDataType type)
+        private async Task GetPuzzleDataAsync(IMessageChannel channel, PuzzleDataType type)
         {
-            var user    = Context.User;
             var message = Context.Message;
             await message.DeleteAsync();
 
-            var channel = await Context.Message.Author.GetOrCreateDMChannelAsync();
+            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
 
-            if (content?.Equals("all") ?? true)
+            if (channel == null)
             {
                 var puzzles = _data.GetAllPuzzlesData(type);
                 var msg = new EmbedBuilder
@@ -156,30 +144,20 @@ namespace JigsawBot
                     msg.Description += $"<#{puzzle.Code}> {string.Join(", ", puzzle.Data)}\n";
                 }
 
-                await channel.SendMessageAsync(embed: msg.Build());
-                await channel.CloseAsync();
+                await dmChannel.SendMessageAsync(embed: msg.Build());
+                await dmChannel.CloseAsync();
                 return;
             }
 
-            var regex = new Regex(@"<#(?<code>\d+)>");
-            var match = regex.Match(content);
-
-            if (!match.Success)
-            {
-                await ReplyAsync($"{user.Mention} Wrong command format.");
-                await channel.CloseAsync();
-                return;
-            }
-
-            var code = match.Groups["code"].Value;
+            var code = channel.Id.ToString();
             var data = _data.GetPuzzleData(code, type);
 
             if (data.Any())
             {
-                await channel.SendMessageAsync($"{type}: <#{code}> {string.Join(", ", data)}");
+                await dmChannel.SendMessageAsync($"{type}: <#{code}> {string.Join(", ", data)}");
             }
 
-            await channel.CloseAsync();
+            await dmChannel.CloseAsync();
         }
 
         #endregion
