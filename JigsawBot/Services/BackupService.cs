@@ -12,7 +12,7 @@ namespace JigsawBot
         private readonly LoggingService     _logger;
         private readonly IDataAccess        _data;
 
-        private readonly Timer _timer = new Timer(60 * 1000);
+        private readonly Timer _timer = new Timer(Constants.BACKUP_TIMER);
 
         public BackupService(IConfigurationRoot config,
                              LoggingService logger,
