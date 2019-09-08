@@ -42,6 +42,12 @@ namespace JigsawBot
             _client.ReactionAdded         += OnReactionAdded;
             _client.ReactionRemoved       += OnReactionRemoved;
             _client.UserVoiceStateUpdated += OnUserVoiceStateUpdated;
+            _client.Connected             += OnClientConnected;
+        }
+
+        private async Task OnClientConnected()
+        {
+            await _client.SetGameAsync("you.", type:ActivityType.Watching);
         }
 
         private async Task OnUserVoiceStateUpdated(SocketUser user,
