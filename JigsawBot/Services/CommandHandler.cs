@@ -28,7 +28,7 @@ namespace JigsawBot
                               BotActions actions,
                               QuotesService quotes)
         {
-            _client  = client;
+            _client   = client;
             _commands = commands;
             _config   = config;
             _provider = provider;
@@ -47,7 +47,7 @@ namespace JigsawBot
 
         private async Task OnClientConnected()
         {
-            await _client.SetGameAsync("you.", type:ActivityType.Watching);
+            await _client.SetGameAsync("you.", type: ActivityType.Watching);
         }
 
         private async Task OnUserVoiceStateUpdated(SocketUser user,
@@ -55,7 +55,7 @@ namespace JigsawBot
                                                    SocketVoiceState state_2)
         {
             if (user.IsBot) return;
-            
+
             var channel = _actions.GetChannelFromConfig(Constants.VOICE_CHANNEL);
 
             if (state_1.VoiceChannel == null && state_2.VoiceChannel != null)
@@ -67,9 +67,9 @@ namespace JigsawBot
 
                 await _actions.SetChannelViewPermissionAsync(user, channel, false);
                 await _actions.SendDirectMessageAsync(user,
-                                                        $"You now have access to {channel.Mention}. "                              +
-                                                        "You can use it to discuss puzzles with the other users in the voice chat " +
-                                                        "and it will be wiped when everyone leaves the voice chat.");
+                                                      $"You now have access to {channel.Mention}. "                               +
+                                                      "You can use it to discuss puzzles with the other users in the voice chat " +
+                                                      "and it will be wiped when everyone leaves the voice chat.");
             }
             else if (state_1.VoiceChannel != null && state_2.VoiceChannel == null)
             {
