@@ -11,15 +11,18 @@ namespace JigsawBot
     public class LoggingService
     {
         private readonly IConfigurationRoot _config;
+        private readonly BotActions         _actions;
 
         private string LogDirectory => Path.Combine(_config["logs_path"], $"{DateTime.UtcNow:yyyy-MM}");
         private string LogFile => Path.Combine(LogDirectory, $"{DateTime.UtcNow:yyyy-MM-dd}.txt");
 
         public LoggingService(DiscordSocketClient discord,
                               CommandService commands,
+                              BotActions actions,
                               IConfigurationRoot config)
         {
-            _config = config;
+            _config  = config;
+            _actions = actions;
 
             discord.Log  += LogAsync;
             commands.Log += LogAsync;
