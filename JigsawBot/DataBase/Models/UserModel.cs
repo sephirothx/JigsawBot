@@ -8,6 +8,10 @@
         public int    Score      { get; set; }
         public bool   HideSolved { get; set; }
 
+        public UserModel()
+        {
+        }
+
         public UserModel(string id, string name)
         {
             Id         = id;
