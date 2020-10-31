@@ -10,17 +10,20 @@ namespace JigsawBot
 {
     public class PuzzleModule : ModuleBase<SocketCommandContext>
     {
-        private readonly IDataAccess   _data;
-        private readonly BotActions    _actions;
-        private readonly QuotesService _quotes;
+        private readonly IDataAccess    _data;
+        private readonly BotActions     _actions;
+        private readonly QuotesService  _quotes;
+        private readonly LoggingService _logger;
 
         public PuzzleModule(IDataAccess data,
                             BotActions actions,
+                            LoggingService logger,
                             QuotesService quotes)
         {
             _data    = data;
             _actions = actions;
             _quotes  = quotes;
+            _logger  = logger;
         }
 
         [Command("answer"), Alias("a")]
