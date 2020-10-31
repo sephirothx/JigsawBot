@@ -44,7 +44,7 @@ namespace JigsawBot
             var answers      = _data.GetPuzzleData(code, PuzzleDataType.Answer);
             var closeAnswers = _data.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
-            string log_msg = $"User *{user.Username}* ({user.Id}) - Puzzle <#{puzzle.Id}> - ||{answer}|| ";
+            string log_msg = $"User **{user.Username}** (`{user.Id}`) - Puzzle <#{puzzle.Id}> - ||{answer}|| ";
 
             if (Contains(answers, answer))
             {
