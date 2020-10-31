@@ -10,6 +10,7 @@
         public const string NOTIFICATIONS_CHANNEL = "channels:notifications";
         public const string LEADERBOARD_CHANNEL   = "channels:leaderboard";
         public const string VOICE_CHANNEL         = "channels:voice";
+        public const string LOGS_CHANNEL          = "channels:logs";
 
         public const string PREFERENCES_MESSAGE = "messages:preferences";
     }
