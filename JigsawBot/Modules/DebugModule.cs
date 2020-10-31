@@ -37,14 +37,7 @@ namespace JigsawBot
                 if (user.IsBot || _data.GetUserById(user.Id.ToString()) != null)
                     continue;
 
-                var u = new UserModel
-                        {
-                            Id     = user.Id.ToString(),
-                            Name   = user.Username,
-                            Solved = 0,
-                            Score  = 0
-                        };
-
+                var u = new UserModel(user.Id.ToString(), user.Username);
                 _data.AddOrUpdateUser(u);
             }
 
