@@ -47,21 +47,31 @@ namespace JigsawBot
             var answers      = _data.GetPuzzleData(code, PuzzleDataType.Answer);
             var closeAnswers = _data.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
+            string log_msg = $"User *{user.Username}* ({user.Id}) - Puzzle <#{puzzle.Id}> - ||{answer}|| ";
+
             if (Contains(answers, answer))
             {
                 await ReplyAsync(_quotes.GetCorrectAnswerMessage(user.Mention));
 
                 await _actions.ProcessCorrectAnswer(user, code);
                 await _actions.UpdateLeaderboard();
+
+                log_msg += ":white_check_mark:";
             }
             else if (Contains(closeAnswers, answer))
             {
                 await ReplyAsync(_quotes.GetCloseAnswerMessage(user.Mention));
+
+                log_msg += ":radio_button:";
             }
             else
             {
                 await ReplyAsync(_quotes.GetWrongAnswerMessage(user.Mention));
+
+                log_msg += ":x:";
             }
+
+            await _logger.LogToServerAsync(log_msg);
         }
 
         [Command("hint")]
