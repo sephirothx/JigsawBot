@@ -31,6 +31,7 @@ namespace JigsawBot
         [Summary("Updates the user database.")]
         public async Task UpdateUsers()
         {
+            await Context.Guild.DownloadUsersAsync();
             var users = Context.Guild.Users;
             foreach (var user in users)
             {
