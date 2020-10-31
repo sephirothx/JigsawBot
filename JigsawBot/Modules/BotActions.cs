@@ -135,7 +135,7 @@ namespace JigsawBot
             string userId = user.Id.ToString();
 
             var puzzle = _data.GetPuzzle(code);
-            var dbUser = _data.GetUserById(userId);
+            var dbUser = _data.GetUserById(userId) ?? new UserModel(user.Id.ToString(), user.Username);
 
             if (dbUser.HideSolved)
             {
