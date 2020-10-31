@@ -48,5 +48,10 @@ namespace JigsawBot
 
             return Console.Out.WriteLineAsync(logText);
         }
+
+        public async Task LogToServerAsync(string msg)
+        {
+            await _actions.SendMessageToChannelAsync(msg, Constants.LOGS_CHANNEL);
+        }
     }
 }
