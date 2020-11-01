@@ -23,5 +23,12 @@ namespace JigsawBot
 
             await _actions.SendHelpMessageAsync(user);
         }
+
+        [Command("uptime")]
+        [Summary("Gets the current uptime.")]
+        public async Task Uptime()
+        {
+            await _actions.SendUptimeMessageAsync(Context.Channel);
+        }
     }
 }
