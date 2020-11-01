@@ -220,6 +220,15 @@ namespace JigsawBot
             await channel.AddPermissionOverwriteAsync(user, new OverwritePermissions(viewChannel: value));
         }
 
+        public async Task SendUptimeMessageAsync(IMessageChannel channel)
+        {
+            var uptime = _logger.GetUptime();
+            await channel.SendMessageAsync("Jigsaw has been up for " +
+                                           (uptime.Days > 0
+                                                ? $@"**{uptime:d\d\ h\h\ mm\m\ ss\s}**"
+                                                : $@"**{uptime:h\h\ mm\m\ ss\s}**"));
+        }
+
         #region Private
 
         private async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
