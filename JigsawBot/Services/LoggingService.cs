@@ -49,5 +49,10 @@ namespace JigsawBot
 
             return Console.Out.WriteLineAsync(logText);
         }
+
+        public TimeSpan GetUptime()
+        {
+            return DateTime.Now - _startDateTime;
+        }
     }
 }
