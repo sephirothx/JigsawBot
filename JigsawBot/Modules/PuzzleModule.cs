@@ -88,7 +88,7 @@ namespace JigsawBot
             }
         }
 
-        [Command("stats"), Alias("s")]
+        [Command("stats"), Alias("solved", "s")]
         [Summary("Gets the stats of a specific user.")]
         public async Task Stats(SocketUser user)
         {
@@ -111,7 +111,7 @@ namespace JigsawBot
             await channel.CloseAsync();
         }
 
-        [Command("stats"), Alias("s")]
+        [Command("stats"), Alias("solved", "s")]
         [Summary("Gets user stats.")]
         public async Task Stats()
         {
