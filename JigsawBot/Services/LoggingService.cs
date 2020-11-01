@@ -15,11 +15,15 @@ namespace JigsawBot
         private string LogDirectory => Path.Combine(_config["logs_path"], $"{DateTime.UtcNow:yyyy-MM}");
         private string LogFile => Path.Combine(LogDirectory, $"{DateTime.UtcNow:yyyy-MM-dd}.txt");
 
+        private readonly DateTime _startDateTime;
+
         public LoggingService(DiscordSocketClient discord,
                               CommandService commands,
                               IConfigurationRoot config)
         {
             _config = config;
+
+            _startDateTime = DateTime.Now;
 
             discord.Log  += LogAsync;
             commands.Log += LogAsync;
