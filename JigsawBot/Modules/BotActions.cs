@@ -242,15 +242,7 @@ namespace JigsawBot
                                                 : $@"**{uptime:h\h\ mm\m\ ss\s}**"));
         }
 
-        #region Private
-
-        private async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
-        {
-            var channel = _client.Guilds.First().GetChannel(ulong.Parse(channelId));
-            await SetChannelViewPermissionAsync(user, channel, hide);
-        }
-
-        private static int CalculatePuzzlePoints(int solvedBy)
+        public static int CalculatePuzzlePoints(int solvedBy)
         {
             if (solvedBy == 0)
             {
@@ -258,6 +250,14 @@ namespace JigsawBot
             }
 
             return Constants.PUZZLE_STARTING_POINTS / solvedBy;
+        }
+
+        #region Private
+
+        private async Task SetChannelViewPermissionAsync(IUser user, string channelId, bool hide)
+        {
+            var channel = _client.Guilds.First().GetChannel(ulong.Parse(channelId));
+            await SetChannelViewPermissionAsync(user, channel, hide);
         }
 
         #endregion
