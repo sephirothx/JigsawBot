@@ -54,16 +54,7 @@ namespace JigsawBot
             foreach (var puzzle in puzzles)
             {
                 var puzzleInfo = _data.GetPuzzleInfo(puzzle.Code);
-                int n          = puzzleInfo.Count;
-
-                if (n > 10)
-                {
-                    puzzle.Points = 1;
-                }
-                else
-                {
-                    puzzle.Points = Constants.PUZZLE_STARTING_POINTS / (1 << n);
-                }
+                puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count);
 
                 _data.AddOrUpdatePuzzle(puzzle);
             }
