@@ -13,7 +13,6 @@ namespace JigsawBot
         List<CompletedPuzzleModel> GetPuzzleInfo(string code);
         void AddOrUpdatePuzzle(PuzzleModel puzzle);
         void AddPuzzleData(PuzzleDataModel data);
-        void UpdatePuzzlePoints(string code);
 
         #endregion
 

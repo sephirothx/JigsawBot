@@ -101,26 +101,6 @@ namespace JigsawBot
             }
         }
 
-        public void UpdatePuzzlePoints(string code)
-        {
-            using (IDbConnection connection = new SQLiteConnection(ConfigurationString))
-            {
-                var puzzle = connection.Query<PuzzleModel>("SELECT * FROM PUZZLE " +
-                                                           $"WHERE Code={code}",
-                                                           new DynamicParameters())
-                                       .First();
-
-                puzzle.Points = puzzle.Points == 1
-                                    ? 1
-                                    : puzzle.Points / 2;
-
-                connection.Execute("UPDATE PUZZLE "      +
-                                   "SET Points=@Points " +
-                                   "WHERE Code=@Code",
-                                   puzzle);
-            }
-        }
-
         #endregion
 
         #region User
