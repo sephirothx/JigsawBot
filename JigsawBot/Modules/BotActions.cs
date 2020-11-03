@@ -118,11 +118,13 @@ namespace JigsawBot
         {
             if (_data.GetPuzzle(puzzle.PuzzleCode) == null)
             {
-                _data.AddOrUpdatePuzzle(new PuzzleModel
-                                        {
-                                            Code   = puzzle.PuzzleCode,
-                                            Points = Constants.PUZZLE_STARTING_POINTS
-                                        });
+                var newPuzzle = new PuzzleModel
+                {
+                    Code   = puzzle.PuzzleCode,
+                    Points = Constants.PUZZLE_STARTING_POINTS
+                };
+                _data.AddOrUpdatePuzzle(newPuzzle);
+
                 await SendMessageToChannelAsync($"Added new puzzle: <#{puzzle.PuzzleCode}>",
                                                 Constants.NOTIFICATIONS_CHANNEL);
             }
@@ -160,11 +162,11 @@ namespace JigsawBot
             }
 
             var cpm = new CompletedPuzzleModel
-                      {
-                          UserId        = userId,
-                          PuzzleCode    = code,
-                          DateCompleted = DateTime.UtcNow
-                      };
+            {
+                UserId        = userId,
+                PuzzleCode    = code,
+                DateCompleted = DateTime.UtcNow
+            };
 
             _data.NewCompletedPuzzle(cpm);
         }
