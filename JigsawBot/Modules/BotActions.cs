@@ -152,13 +152,24 @@ namespace JigsawBot
             {
                 var usersWhoSolvedPuzzle = _data.GetUsersWhoCompletedPuzzle(code);
 
+                int oldPuzzlePoints = CalculatePuzzlePoints(usersWhoSolvedPuzzle.Count);
+                int newPuzzlePoints = CalculatePuzzlePoints(usersWhoSolvedPuzzle.Count + 2);
+
+                int pointDifference = oldPuzzlePoints - puzzle.Points;
+
                 foreach (var userWhoSolvedPuzzle in usersWhoSolvedPuzzle)
                 {
-                    userWhoSolvedPuzzle.Score -= puzzle.Points;
+                    userWhoSolvedPuzzle.Score -= pointDifference;
                     _data.AddOrUpdateUser(userWhoSolvedPuzzle);
                 }
 
-                _data.UpdatePuzzlePoints(code);
+                var p = new PuzzleModel
+                {
+                    Code   = puzzle.Code,
+                    Points = newPuzzlePoints
+                };
+
+                _data.AddOrUpdatePuzzle(p);
             }
 
             var cpm = new CompletedPuzzleModel
