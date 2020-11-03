@@ -239,6 +239,16 @@ namespace JigsawBot
             await SetChannelViewPermissionAsync(user, channel, hide);
         }
 
+        private static int CalculatePuzzlePoints(int solvedBy)
+        {
+            if (solvedBy == 0)
+            {
+                return Constants.PUZZLE_STARTING_POINTS;
+            }
+
+            return Constants.PUZZLE_STARTING_POINTS / solvedBy;
+        }
+
         #endregion
     }
 }
