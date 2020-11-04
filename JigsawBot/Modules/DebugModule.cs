@@ -66,6 +66,21 @@ namespace JigsawBot
             await ReplyAsync("User scores updated.");
         }
 
+        [Command("updateall")]
+        [Summary("Updates the puzzles and users points in the database.")]
+        public async Task UpdateAll()
+        {
+            var puzzles = _data.GetPuzzles();
+            var users   = _data.GetUsers();
+
+            UpdatePuzzlesPoints(puzzles); // Correct values to calculate scores
+            UpdateUsersScores(users);
+            UpdatePuzzlesPoints(puzzles, 1); // Correct values to display
+
+            await _actions.UpdateLeaderboard();
+            await ReplyAsync("Puzzles and users scores updated.");
+        }
+
         [Command("updatehidden"), Alias("uh")]
         [Summary("Updates the hide-solved-puzzles preferences.")]
         public async Task UpdateHidden()
