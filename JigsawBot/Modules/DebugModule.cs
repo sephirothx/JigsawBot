@@ -17,7 +17,7 @@ namespace JigsawBot
             _actions = actions;
         }
 
-        [Command("leaderboard"), Alias("l")]
+        [Command("leaderboard"), Alias("lb")]
         [Summary("Updates the leaderboard.")]
         public async Task Leaderboard()
         {
