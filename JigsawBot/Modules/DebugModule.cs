@@ -89,7 +89,7 @@ namespace JigsawBot
             await ReplyAsync($"Channel {channel.Mention} purged.");
         }
 
-        #region MyRegion
+        #region Private
 
         private void UpdatePuzzlesPoints(IEnumerable<PuzzleModel> puzzles, int modifier = 0)
         {
