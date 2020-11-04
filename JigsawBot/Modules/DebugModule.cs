@@ -61,18 +61,7 @@ namespace JigsawBot
         public async Task CalculateUserScore()
         {
             var users = _data.GetUsers();
-            foreach (var user in users)
-            {
-                user.Score = 0;
-                var solved = _data.GetUsersCompletedPuzzles(user.Id);
-                foreach (var puzzle in solved)
-                {
-                    var p = _data.GetPuzzle(puzzle.PuzzleCode);
-                    user.Score += p.Points;
-                }
-
-                _data.AddOrUpdateUser(user);
-            }
+            UpdateUsersScores(users);
 
             await ReplyAsync("User scores updated.");
         }
@@ -110,6 +99,22 @@ namespace JigsawBot
                 puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count);
 
                 _data.AddOrUpdatePuzzle(puzzle);
+            }
+        }
+
+        private void UpdateUsersScores(IEnumerable<UserModel> users)
+        {
+            foreach (var user in users)
+            {
+                user.Score = 0;
+                var solved = _data.GetUsersCompletedPuzzles(user.Id);
+                foreach (var puzzle in solved)
+                {
+                    var p = _data.GetPuzzle(puzzle.PuzzleCode);
+                    user.Score += p.Points;
+                }
+
+                _data.AddOrUpdateUser(user);
             }
         }
 
