@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 
@@ -50,14 +51,7 @@ namespace JigsawBot
         public async Task UpdatePuzzles()
         {
             var puzzles = _data.GetPuzzles();
-
-            foreach (var puzzle in puzzles)
-            {
-                var puzzleInfo = _data.GetPuzzleInfo(puzzle.Code);
-                puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count);
-
-                _data.AddOrUpdatePuzzle(puzzle);
-            }
+            UpdatePuzzlesPoints(puzzles);
 
             await ReplyAsync("Puzzle database updated.");
         }
@@ -105,5 +99,20 @@ namespace JigsawBot
             await _actions.PurgeChannel(channel);
             await ReplyAsync($"Channel {channel.Mention} purged.");
         }
+
+        #region MyRegion
+
+        private void UpdatePuzzlesPoints(IEnumerable<PuzzleModel> puzzles, int modifier = 0)
+        {
+            foreach (var puzzle in puzzles)
+            {
+                var puzzleInfo = _data.GetPuzzleInfo(puzzle.Code);
+                puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count);
+
+                _data.AddOrUpdatePuzzle(puzzle);
+            }
+        }
+
+        #endregion
     }
 }
