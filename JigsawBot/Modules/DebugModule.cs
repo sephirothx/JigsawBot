@@ -111,7 +111,7 @@ namespace JigsawBot
             foreach (var puzzle in puzzles)
             {
                 var puzzleInfo = _data.GetPuzzleInfo(puzzle.Code);
-                puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count);
+                puzzle.Points = BotActions.CalculatePuzzlePoints(puzzleInfo.Count + modifier);
 
                 _data.AddOrUpdatePuzzle(puzzle);
             }
