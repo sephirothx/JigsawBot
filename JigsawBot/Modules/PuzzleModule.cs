@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -193,7 +193,10 @@ namespace JigsawBot
 
         private static bool Contains(List<string> list, string item)
         {
-            return list.Any(s => s.Equals(item, StringComparison.InvariantCultureIgnoreCase));
+            return list.Any(s => string.Compare(s, item,
+                                                CultureInfo.InvariantCulture,
+                                                CompareOptions.IgnoreSymbols |
+                                                CompareOptions.IgnoreCase) == 0);
         }
 
         #endregion
