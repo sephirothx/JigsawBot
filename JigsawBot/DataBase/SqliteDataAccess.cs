@@ -214,9 +214,9 @@ namespace JigsawBot
         {
             using (IDbConnection connection = new SQLiteConnection(ConfigurationString))
             {
-                var output = connection.Query<UserModel>("select Id, Name, Solved, Score from User " +
-                                                         "inner join CompletedPuzzles "              +
-                                                         "on User.Id=CompletedPuzzles.UserId "       +
+                var output = connection.Query<UserModel>("select * from User "                 +
+                                                         "inner join CompletedPuzzles "        +
+                                                         "on User.Id=CompletedPuzzles.UserId " +
                                                          $"where CompletedPuzzles.PuzzleCode='{puzzleCode}'",
                                                          new DynamicParameters());
                 return output.ToList();
