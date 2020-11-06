@@ -43,10 +43,12 @@
       <Version>3.1.9</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>1.1.0</Version>
+      <Version>3.1.9</Version>
     </PackageReference>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.113.5</Version>
+      <Version>1.0.113.6</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
