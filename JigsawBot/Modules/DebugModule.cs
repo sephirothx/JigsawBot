@@ -104,6 +104,22 @@ namespace JigsawBot
             await ReplyAsync($"Channel {channel.Mention} purged.");
         }
 
+        [Command("roles")]
+        [Summary("Grants roles to users.")]
+        public async Task UpdateRoles()
+        {
+            await Context.Guild.DownloadUsersAsync();
+            var users = Context.Guild.Users;
+
+            foreach (var user in users)
+            {
+                if (user.IsBot) continue;
+
+                var u = _data.GetUserById(user.Id.ToString());
+                await _actions.UpdateRoleAsync(user, u.Score);
+            }
+        }
+
         #region Private
 
         private void UpdatePuzzlesPoints(IEnumerable<PuzzleModel> puzzles, int modifier = 0)
