@@ -13,5 +13,7 @@
         public const string LOGS_CHANNEL          = "channels:logs";
 
         public const string PREFERENCES_MESSAGE = "messages:preferences";
+
+        public const string ROLES_SCORE = "roles-score";
     }
 }
