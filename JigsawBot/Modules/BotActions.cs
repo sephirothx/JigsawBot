@@ -242,6 +242,39 @@ namespace JigsawBot
                                                 : $@"**{uptime:h\h\ mm\m\ ss\s}**"));
         }
 
+        public async Task UpdateRoleAsync(IGuildUser user, int score, int prev = 0)
+        {
+            if (score <= prev) return;
+
+            var roles = _config.GetSection(Constants.ROLES_SCORE);
+
+            string newRole = null;
+            string oldRole = null;
+
+            foreach (var pair in roles.GetChildren().OrderBy(p => int.Parse(p.Value)))
+            {
+                var roleName  = pair.Key;
+                int threshold = int.Parse(pair.Value);
+
+                newRole = score > threshold ? roleName : newRole;
+                oldRole = prev  > threshold ? roleName : oldRole;
+            }
+
+            if (newRole == oldRole) return;
+
+            if (oldRole != null)
+            {
+                var role = user.Guild.Roles.FirstOrDefault(r => r.Name == oldRole);
+                await user.RemoveRoleAsync(role);
+            }
+
+            if (newRole != null)
+            {
+                var role = user.Guild.Roles.FirstOrDefault(r => r.Name == newRole);
+                await user.AddRoleAsync(role);
+            }
+        }
+
         public static int CalculatePuzzlePoints(int solvedBy)
         {
             if (solvedBy == 0)
