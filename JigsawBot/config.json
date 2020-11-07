@@ -16,5 +16,13 @@
     "preferences": ""
   },
 
+  "roles-score": {
+    "Novice": 1,
+    "Beginner": 500,
+    "Advanced": 1000,
+    "Expert": 5000,
+    "Grandmaster": 10000
+  },
+
   "token": ""
 }
