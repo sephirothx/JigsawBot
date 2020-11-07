@@ -260,8 +260,8 @@ namespace JigsawBot
                 var roleName  = pair.Key;
                 int threshold = int.Parse(pair.Value);
 
-                newRole = score > threshold ? roleName : newRole;
-                oldRole = prev  > threshold ? roleName : oldRole;
+                newRole = score >= threshold ? roleName : newRole;
+                oldRole = prev  >= threshold ? roleName : oldRole;
             }
 
             if (newRole == oldRole) return;
