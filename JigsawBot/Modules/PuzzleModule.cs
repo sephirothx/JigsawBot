@@ -27,7 +27,7 @@ namespace JigsawBot
         [Summary("Answer a puzzle question.")]
         public async Task Answer(IMessageChannel puzzle, [Remainder] string content)
         {
-            var user    = Context.User;
+            var user    = (IGuildUser)Context.User;
             var message = Context.Message;
             await message.DeleteAsync();
 
