@@ -132,7 +132,7 @@ namespace JigsawBot
             _data.AddPuzzleData(puzzle);
         }
 
-        public async Task ProcessCorrectAnswer(IUser user, string code)
+        public async Task ProcessCorrectAnswer(IGuildUser user, string code)
         {
             string userId = user.Id.ToString();
 
@@ -144,9 +144,13 @@ namespace JigsawBot
                 await SetChannelViewPermissionAsync(user, code, true);
             }
 
+            int oldScore = dbUser.Score;
+
             dbUser.Score += puzzle.Points;
             dbUser.Solved++;
             _data.AddOrUpdateUser(dbUser);
+
+            await UpdateRoleAsync(user, dbUser.Score, oldScore);
 
             if (puzzle.Points != 1)
             {
