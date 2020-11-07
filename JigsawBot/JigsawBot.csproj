@@ -23,9 +23,6 @@
     <OutputPath>C:\JigsawData\bot\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="ProjectDB.db" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Dapper">
       <Version>2.0.35</Version>
     </PackageReference>
