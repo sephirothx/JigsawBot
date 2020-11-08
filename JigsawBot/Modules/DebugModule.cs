@@ -118,6 +118,8 @@ namespace JigsawBot
                 var u = _data.GetUserById(user.Id.ToString());
                 await _actions.UpdateRoleAsync(user, u.Score);
             }
+
+            await ReplyAsync("Updated roles for all users.");
         }
 
         #region Private
