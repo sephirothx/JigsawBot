@@ -36,4 +36,4 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 ## Preferences
 Go to the **#preferences** channel and react to Jigsaw's post in order to change your settings.
 
-👀 : Show already solved puzzles.
+👀 : Toggles showing or hiding already solved puzzles.
