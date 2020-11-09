@@ -3,6 +3,7 @@
     public static class Constants
     {
         public const int PUZZLE_STARTING_POINTS = 1080;
+        public const int PUZZLE_MINIMUM_POINTS  = 120;
 
         public const int BACKUP_TIMER = 12 * 60 * 60 * 1000;
 
