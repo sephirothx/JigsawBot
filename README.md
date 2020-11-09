@@ -17,3 +17,10 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 
 ### [Encodings](https://puzzlehunt.azurewebsites.net/nipd2020/play/encodings)
 ### [Puzzle Solving Tools](https://puzzlehunt.azurewebsites.net/nipd2020/play/tools)
+
+## How are points awarded?
+
+- Each puzzle starts at 1200 points
+- A puzzle's points are divided among all the players who solved it with the fomula: `120 + 1080 / solves`
+- Each time a puzzle is solved, the score is updated for every player who solved that puzzle
+- A puzzle's score cannot go below 1
