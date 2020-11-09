@@ -121,7 +121,7 @@ namespace JigsawBot
                 var newPuzzle = new PuzzleModel
                 {
                     Code   = puzzle.PuzzleCode,
-                    Points = Constants.PUZZLE_STARTING_POINTS
+                    Points = CalculatePuzzlePoints(0)
                 };
                 _data.AddOrUpdatePuzzle(newPuzzle);
 
