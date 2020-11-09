@@ -283,10 +283,10 @@ namespace JigsawBot
         {
             if (solvedBy == 0)
             {
-                return Constants.PUZZLE_STARTING_POINTS;
+                return Constants.PUZZLE_MINIMUM_POINTS + Constants.PUZZLE_STARTING_POINTS;
             }
 
-            return Constants.PUZZLE_STARTING_POINTS / solvedBy;
+            return Constants.PUZZLE_MINIMUM_POINTS + Constants.PUZZLE_STARTING_POINTS / solvedBy;
         }
 
         #region Private
