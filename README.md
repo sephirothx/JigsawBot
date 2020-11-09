@@ -34,6 +34,15 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 <br>
 
 ## Preferences
+
 Go to the **#preferences** channel and react to Jigsaw's post in order to change your settings.
 
 👀 : Toggles showing or hiding already solved puzzles.
+
+<br>
+
+## Extras
+
+If you want to solve puzzles together over voice, an exclusive text channel called **#voice-channel-puzzle** will appear as soon as you join the voice chat. Feel free to use it to share anything without having to worry about spoiling puzzles to other players!
+
+As soon as you join the voice chat you will be able to see **#voice-channel-puzzle**, and all messages will be wiped after everybody has left the voice chat.
