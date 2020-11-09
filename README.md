@@ -30,3 +30,10 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 - A puzzle's points are divided among all the players who solved it with the fomula: `120 + 1080 / solves`
 - Each time a puzzle is solved, the score is updated for every player who solved that puzzle
 - A puzzle's score cannot go below **120**
+
+<br>
+
+## Preferences
+Go to the **#preferences** channel and react to Jigsaw's post in order to change your settings.
+
+👀 : Show already solved puzzles.
