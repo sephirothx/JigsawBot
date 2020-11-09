@@ -2,6 +2,8 @@
 
 Bot for the puzzles discord server https://discord.gg/2eBhcVm
 
+<br>
+
 ## Instructions
 
 1. Each channel is an independent puzzle.
@@ -13,10 +15,14 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 1. Channels are ordered by difficulty; easiest to hardest.
 1. Type `!help` in **#post-your-solutions-here** or **#general** to receive the list of commands from the bot.
 
+<br>
+
 ## Useful links
 
 ### [Encodings](https://puzzlehunt.azurewebsites.net/nipd2020/play/encodings)
 ### [Puzzle Solving Tools](https://puzzlehunt.azurewebsites.net/nipd2020/play/tools)
+
+<br>
 
 ## How are points awarded?
 
