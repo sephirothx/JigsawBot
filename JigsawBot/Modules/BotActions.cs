@@ -152,7 +152,7 @@ namespace JigsawBot
 
             await UpdateRoleAsync(user, dbUser.Score, oldScore);
 
-            if (puzzle.Points != 1)
+            if (puzzle.Points > Constants.PUZZLE_MINIMUM_POINTS)
             {
                 var usersWhoSolvedPuzzle = _data.GetUsersWhoCompletedPuzzle(code);
 
