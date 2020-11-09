@@ -12,3 +12,8 @@ Bot for the puzzles discord server https://discord.gg/2eBhcVm
 `!answer #futoshiki ||my hidden answer||` or you can do it from the right-click menu like shown in the image: ![hide-solution](img/hide-answer.png)
 1. Channels are ordered by difficulty; easiest to hardest
 1. Type !help in #post-your-solutions-here or #general to receive the list of commands from the bot
+
+## Useful links
+
+### [Encodings](https://puzzlehunt.azurewebsites.net/nipd2020/play/encodings)
+### [Puzzle Solving Tools](https://puzzlehunt.azurewebsites.net/nipd2020/play/tools)
