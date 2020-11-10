@@ -74,15 +74,16 @@ namespace JigsawBot
                                $"{_prefix}getcloseanswer or {_prefix}gca\n" +
                                $"{_prefix}gethint or {_prefix}gh",
                                "Gets the Answer/CloseAnswer/Hint for one or every puzzle.\n" +
-                               $"`{_prefix}getanswer #channel-name`\n"                        +
+                               $"`{_prefix}getanswer #channel-name`\n"                       +
                                $"`{_prefix}getanswer` or `{_prefix}getanswer all`")
                      .AddField($"{_prefix}setquote or {_prefix}sq",
                                "Adds a new quote of the chosen type to the database. Types:\n" +
-                               "0 - CorrectAnswer\n"                                           +
-                               "1 - WrongAnswer\n"                                             +
-                               "2 - Greeting\n"                                                +
-                               "3 - CloseAnswer\n"                                             +
-                               "4 - AlreadySolved\n"                                           +
+                               "0 - **CorrectAnswer**\n"                                       +
+                               "1 - **WrongAnswer**\n"                                         +
+                               "2 - **Greeting**\n"                                            +
+                               "3 - **CloseAnswer**\n"                                         +
+                               "4 - **AlreadySolved**\n"                                       +
+                               "5 - **NotAPuzzle**\n"                                          +
                                "`_NAME_` is used as a placeholder for user mention.\n"         +
                                $"`{_prefix}setquote 2 Hello _NAME_.`");
 

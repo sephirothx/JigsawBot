@@ -44,6 +44,12 @@ namespace JigsawBot
             var answers      = _data.GetPuzzleData(code, PuzzleDataType.Answer);
             var closeAnswers = _data.GetPuzzleData(code, PuzzleDataType.CloseAnswer);
 
+            if (answers.Count == 0)
+            {
+                await ReplyAsync(_quotes.GetNotAPuzzleMessage(user.Mention));
+                return;
+            }
+
             string log_msg = $"User **{user.Username}** (`{user.Id}`) - Puzzle <#{puzzle.Id}> - ||{answer}|| ";
 
             if (Contains(answers, answer))

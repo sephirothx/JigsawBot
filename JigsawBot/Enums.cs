@@ -13,6 +13,7 @@
         WrongAnswer   = 1,
         Greeting      = 2,
         CloseAnswer   = 3,
-        AlreadySolved = 4
+        AlreadySolved = 4,
+        NotAPuzzle    = 5
     }
 }
