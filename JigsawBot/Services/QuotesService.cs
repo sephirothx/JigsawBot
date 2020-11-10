@@ -38,6 +38,11 @@ namespace JigsawBot
             return ":warning: " + GetQuoteWithName(QuoteType.AlreadySolved, name);
         }
 
+        public string GetNotAPuzzleMessage(string name)
+        {
+            return GetQuoteWithName(QuoteType.NotAPuzzle, name);
+        }
+
         private string GetQuoteWithName(QuoteType type, string name)
         {
             var quotes = _data.GetQuotes(type);
