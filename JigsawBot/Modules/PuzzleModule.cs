@@ -177,7 +177,7 @@ namespace JigsawBot
             await ReplyAsync($"<#{puzzle.Id}>", embed: msg.Build());
         }
 
-        [Command("puzzle"), Alias("p")]
+        [Command("puzzle"), Alias("puzzles", "p")]
         [Summary("Gets stats for all the puzzles.")]
         public async Task Puzzle()
         {
